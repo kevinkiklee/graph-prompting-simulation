@@ -5,6 +5,7 @@ async function main() {
   const args = process.argv.slice(2);
   let runs = 5;
   let targetModel: ModelVersion | undefined = undefined;
+  let concurrency = 3;
 
   const runIndex = args.indexOf('--runs');
   if (runIndex !== -1 && args[runIndex + 1]) {
@@ -23,13 +24,19 @@ async function main() {
     }
   }
 
+  const concurrencyIndex = args.indexOf('--concurrency') !== -1 ? args.indexOf('--concurrency') : args.indexOf('-c');
+  if (concurrencyIndex !== -1 && args[concurrencyIndex + 1]) {
+    concurrency = parseInt(args[concurrencyIndex + 1], 10);
+  }
+
   console.log(`Starting Simulation Engine...`);
   if (targetModel) {
     console.log(`Targeting model: ${targetModel}`);
   }
   console.log(`Targeting ${runs} runs per Model/Strategy/TestCase combination.`);
+  console.log(`Parallel concurrency: ${concurrency}`);
   
-  await runSimulationMatrix(runs, targetModel);
+  await runSimulationMatrix(runs, targetModel, concurrency);
   
   console.log('Simulation complete! Results saved to results.jsonl');
 }

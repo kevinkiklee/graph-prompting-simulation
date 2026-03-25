@@ -7,7 +7,7 @@ import { evaluateProcessAdherence } from './processEvaluator';
 import { appendLog, readLogs } from '../utils/logger';
 import { randomUUID } from 'crypto';
 
-export async function runSimulationMatrix(runsPerCombo = 5, targetModel?: ModelVersion) {
+export async function runSimulationMatrix(runsPerCombo = 5, targetModel?: ModelVersion, concurrency = 3) {
   const models = targetModel ? [targetModel] : Object.values(ModelVersion);
   const strategies = Object.values(AgentStrategy);
   const existingLogs = readLogs();
@@ -18,6 +18,9 @@ export async function runSimulationMatrix(runsPerCombo = 5, targetModel?: ModelV
     runCounts.set(key, (runCounts.get(key) || 0) + 1);
   }
 
+  // Create a flat list of tasks to execute
+  const tasks: Array<{ model: ModelVersion, strategy: AgentStrategy, testCase: any, runIndex: number }> = [];
+
   for (const model of models) {
     for (const strategy of strategies) {
       for (const testCase of testCases) {
@@ -25,45 +28,70 @@ export async function runSimulationMatrix(runsPerCombo = 5, targetModel?: ModelV
         const completed = runCounts.get(key) || 0;
 
         for (let i = completed; i < runsPerCombo; i++) {
-          console.log(`Running ${model} | ${strategy} | ${testCase.id} | Run ${i + 1}/${runsPerCombo}`);
-          
-          let result;
-          try {
-            if (strategy === AgentStrategy.Naive) {
-              result = await runNaiveAgent(model, testCase);
-            } else if (strategy === AgentStrategy.Structured) {
-              result = await runStructuredAgent(model, testCase);
-            } else if (strategy === AgentStrategy.Graph) {
-              result = await runGraphAgent(model, testCase);
-            }
-
-            if (!result) continue;
-
-            const success = evaluateRemediation(testCase, result.output);
-            const processEval = evaluateProcessAdherence(strategy, result.rawAgentTrace || '');
-            
-            const logEntry: SimulationRun = {
-              runId: randomUUID(),
-              timestamp: new Date().toISOString(),
-              model,
-              strategy,
-              testCaseId: testCase.id,
-              success,
-              processAdherence: strategy === AgentStrategy.Naive ? false : processEval.followed,
-              latencyMs: result.totalLatencyMs,
-              totalTokens: result.totalTokens,
-              turnCount: result.turnCount,
-              rawOutput: result.output,
-              rawAgentTrace: result.rawAgentTrace || result.output,
-              stateTrace: processEval.trace
-            };
-
-            appendLog(logEntry);
-          } catch (error) {
-            console.error(`Error during run:`, error);
-          }
+          tasks.push({ model, strategy, testCase, runIndex: i });
         }
       }
     }
   }
+
+  console.log(`Total tasks to execute: ${tasks.length} (Concurrency: ${concurrency})`);
+
+  let completedCount = 0;
+  const activePromises = new Set<Promise<void>>();
+
+  for (const task of tasks) {
+    // If we've reached the concurrency limit, wait for one to finish
+    if (activePromises.size >= concurrency) {
+      await Promise.race(activePromises);
+    }
+
+    const promise = (async () => {
+      const { model, strategy, testCase, runIndex } = task;
+      console.log(`[START] ${model} | ${strategy} | ${testCase.id} | Run ${runIndex + 1}/${runsPerCombo}`);
+      
+      try {
+        let result;
+        if (strategy === AgentStrategy.Naive) {
+          result = await runNaiveAgent(model, testCase);
+        } else if (strategy === AgentStrategy.Structured) {
+          result = await runStructuredAgent(model, testCase);
+        } else if (strategy === AgentStrategy.Graph) {
+          result = await runGraphAgent(model, testCase);
+        }
+
+        if (result) {
+          const success = evaluateRemediation(testCase, result.output);
+          const processEval = evaluateProcessAdherence(strategy, result.rawAgentTrace || '');
+          
+          const logEntry: SimulationRun = {
+            runId: randomUUID(),
+            timestamp: new Date().toISOString(),
+            model,
+            strategy,
+            testCaseId: testCase.id,
+            success,
+            processAdherence: strategy === AgentStrategy.Naive ? false : processEval.followed,
+            latencyMs: result.totalLatencyMs,
+            totalTokens: result.totalTokens,
+            turnCount: result.turnCount,
+            rawOutput: result.output,
+            rawAgentTrace: result.rawAgentTrace || result.output,
+            stateTrace: processEval.trace
+          };
+
+          appendLog(logEntry);
+          completedCount++;
+          console.log(`[DONE] (${completedCount}/${tasks.length}) ${model} | ${strategy} | ${testCase.id}`);
+        }
+      } catch (error) {
+        console.error(`Error during run:`, error);
+      }
+    })();
+
+    activePromises.add(promise);
+    promise.finally(() => activePromises.delete(promise));
+  }
+
+  // Wait for all remaining tasks to complete
+  await Promise.all(activePromises);
 }
