@@ -183,12 +183,12 @@ export function Dashboard() {
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-2">
-                        <span className={`font-mono text-xs ${run.processAdherence ? 'text-green-600' : 'text-orange-600'}`}>
+                        <span className={`font-mono text-xs ${run.processAdherenceScore && run.processAdherenceScore > 0 ? 'text-green-600' : 'text-orange-600'}`}>
                           {Math.round((run.processAdherenceScore || 0) * 100)}%
                         </span>
                         <div className="w-16 bg-gray-200 rounded-full h-1.5">
                           <div 
-                            className={`h-1.5 rounded-full ${run.processAdherence ? 'bg-green-500' : 'bg-orange-500'}`} 
+                            className={`h-1.5 rounded-full ${run.processAdherenceScore && run.processAdherenceScore > 0 ? 'bg-green-500' : 'bg-orange-500'}`} 
                             style={{ width: `${Math.round((run.processAdherenceScore || 0) * 100)}%` }}
                           ></div>
                         </div>
