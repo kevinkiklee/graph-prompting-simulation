@@ -50,7 +50,8 @@ export async function runSimulationMatrix(runsPerCombo = 5, targetModel?: ModelV
               latencyMs: result.totalLatencyMs,
               totalTokens: result.totalTokens,
               turnCount: result.turnCount,
-              rawOutput: result.output
+              rawOutput: result.output,
+              rawAgentTrace: result.rawAgentTrace || result.output
             };
 
             appendLog(logEntry);

@@ -12,10 +12,12 @@ export interface SimulationRun {
   totalTokens: number;
   turnCount: number;
   rawOutput: string;
+  rawAgentTrace?: string;
 }
 
 export function Dashboard() {
   const [data, setData] = useState<SimulationRun[]>([]);
+  const [expandedRow, setExpandedRow] = useState<string | null>(null);
 
   useEffect(() => {
     fetch('/results.jsonl')
@@ -143,19 +145,44 @@ export function Dashboard() {
             </thead>
             <tbody className="divide-y divide-gray-200">
               {data.map((run, i) => (
-                <tr key={i} className="hover:bg-gray-50">
-                  <td className="px-6 py-4">{run.model}</td>
-                  <td className="px-6 py-4">{run.strategy}</td>
-                  <td className="px-6 py-4">{run.testCaseId}</td>
-                  <td className="px-6 py-4">
-                    <span className={`px-2 py-1 rounded text-xs font-semibold ${run.success ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
-                      {run.success ? 'PASS' : 'FAIL'}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4">{run.latencyMs}</td>
-                  <td className="px-6 py-4">{run.totalTokens}</td>
-                  <td className="px-6 py-4">{run.turnCount}</td>
-                </tr>
+                <React.Fragment key={run.runId || i}>
+                  <tr 
+                    className="hover:bg-gray-50 cursor-pointer"
+                    onClick={() => setExpandedRow(expandedRow === (run.runId || String(i)) ? null : (run.runId || String(i)))}
+                  >
+                    <td className="px-6 py-4">{run.model}</td>
+                    <td className="px-6 py-4">{run.strategy}</td>
+                    <td className="px-6 py-4">{run.testCaseId}</td>
+                    <td className="px-6 py-4">
+                      <span className={`px-2 py-1 rounded text-xs font-semibold ${run.success ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                        {run.success ? 'PASS' : 'FAIL'}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4">{run.latencyMs}</td>
+                    <td className="px-6 py-4">{run.totalTokens}</td>
+                    <td className="px-6 py-4 text-blue-600 underline">View Log</td>
+                  </tr>
+                  {expandedRow === (run.runId || String(i)) && (
+                    <tr>
+                      <td colSpan={7} className="px-6 py-4 bg-gray-50 border-t border-gray-200">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                          <div>
+                            <h4 className="font-semibold text-gray-700 mb-2">Final Extracted Code</h4>
+                            <pre className="bg-gray-900 text-gray-100 p-4 rounded text-xs overflow-auto max-h-96 whitespace-pre-wrap">
+                              {run.rawOutput || 'No output'}
+                            </pre>
+                          </div>
+                          <div>
+                            <h4 className="font-semibold text-gray-700 mb-2">Agent Trace / Thinking Process</h4>
+                            <pre className="bg-gray-900 text-gray-100 p-4 rounded text-xs overflow-auto max-h-96 whitespace-pre-wrap border border-gray-700">
+                              {run.rawAgentTrace || run.rawOutput || 'N/A'}
+                            </pre>
+                          </div>
+                        </div>
+                      </td>
+                    </tr>
+                  )}
+                </React.Fragment>
               ))}
             </tbody>
           </table>

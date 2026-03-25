@@ -29,4 +29,5 @@ export interface SimulationRun {
   totalTokens: number;
   turnCount: number;
   rawOutput: string;
+  rawAgentTrace?: string;
 }
