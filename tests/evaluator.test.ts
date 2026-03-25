@@ -4,10 +4,14 @@ import { testCases } from '../src/data/test-cases';
 
 describe('Evaluator', () => {
   it('should pass on valid remediation', () => {
-    const testCase = testCases[0]; // SQL injection
+    const testCase = testCases[0]; // Concurrent Task Scheduler
     const validOutput = `
-      const query = "SELECT * FROM users WHERE username = $1 AND password = $2";
-      db.query(query, [username, password]);
+      const running = new Set();
+      try {
+        await Promise.all();
+      } catch (e) {
+        console.error(e);
+      }
     `;
     expect(evaluateRemediation(testCase, validOutput)).toBe(true);
   });
@@ -15,8 +19,8 @@ describe('Evaluator', () => {
   it('should fail on invalid remediation', () => {
     const testCase = testCases[0];
     const invalidOutput = `
-      // I added a comment but left the code the same
-      const query = "SELECT * FROM users WHERE username = '" + username + "' AND password = '" + password + "'";
+      // Did not use tracking and did not handle errors
+      await Promise.all(tasks);
     `;
     expect(evaluateRemediation(testCase, invalidOutput)).toBe(false);
   });
