@@ -6,17 +6,24 @@ const PROCESS_GRAPH = `
 
 \`\`\`dot
 digraph remediation {
-    "Analyze code" [shape=box];
-    "Plan remediation" [shape=box];
-    "Apply fix" [shape=box];
-    "Verify fix" [shape=box];
-    "Success" [shape=doublecircle];
+  "Analyze Request" [shape=box];
+  "Threat Modeling" [shape=box];
+  "Draft Architecture" [shape=box];
+  "Review Architecture" [shape=diamond];
+  "Implement Core Logic" [shape=box];
+  "Add Security Controls" [shape=box];
+  "Run Self-Test" [shape=diamond];
+  "Finalize Code" [shape=doublecircle];
 
-    "Analyze code" -> "Plan remediation";
-    "Plan remediation" -> "Apply fix";
-    "Apply fix" -> "Verify fix";
-    "Verify fix" -> "Plan remediation" [label="issue remains"];
-    "Verify fix" -> "Success" [label="verified"];
+  "Analyze Request" -> "Threat Modeling";
+  "Threat Modeling" -> "Draft Architecture";
+  "Draft Architecture" -> "Review Architecture";
+  "Review Architecture" -> "Draft Architecture" [label="Flaws found"];
+  "Review Architecture" -> "Implement Core Logic" [label="Approved"];
+  "Implement Core Logic" -> "Add Security Controls";
+  "Add Security Controls" -> "Run Self-Test";
+  "Run Self-Test" -> "Implement Core Logic" [label="Bugs found"];
+  "Run Self-Test" -> "Finalize Code" [label="All tests pass"];
 }
 \`\`\`
 `;
@@ -26,10 +33,12 @@ export async function runGraphAgent(model: string, testCase: TestCase) {
 
   const graphPrompt = `${systemBase}
 
-Task: Execute the process graph from start to finish for the following buggy code.
-Output your thought process as you move through each node in the graph (e.g., "State: Analyze code...").
+Task: ${testCase.description}
 
-When you reach the "Success" terminal state, output the final fully fixed code enclosed in \`\`\`javascript ... \`\`\` code blocks.
+Execute the process graph from start to finish for the following buggy code.
+INSTRUCTIONS: You MUST output your reasoning step-by-step. When you transition to a new node in the graph, you MUST explicitly output a marker with the exact node name wrapped in brackets like this: [STATE: Analyze Request]. Do not omit any steps!
+
+When you reach the "Finalize Code" terminal state, output the final fully fixed code enclosed in \`\`\`javascript ... \`\`\` code blocks.
 
 Code to review:
 ${testCase.buggyCode}
@@ -37,7 +46,6 @@ ${testCase.buggyCode}
 
   const result = await callModel(model, graphPrompt);
   
-  // Extract just the code from the final output block to be parsed by the evaluator
   let extractedCode = result.text;
   const match = extractedCode.match(/```(?:javascript|js|typescript|ts)?\n([\s\S]*?)```/);
   if (match && match[1]) {
@@ -49,6 +57,6 @@ ${testCase.buggyCode}
     totalLatencyMs: result.latencyMs,
     totalTokens: result.tokens,
     turnCount: 1,
-    rawAgentTrace: result.text // We keep the full trace for the logs if needed, but return the extracted code as output
+    rawAgentTrace: result.text
   };
 }

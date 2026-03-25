@@ -25,9 +25,11 @@ export interface SimulationRun {
   strategy: AgentStrategy;
   testCaseId: string;
   success: boolean;
+  processAdherence: boolean;
   latencyMs: number;
   totalTokens: number;
   turnCount: number;
   rawOutput: string;
   rawAgentTrace?: string;
+  stateTrace?: string[];
 }

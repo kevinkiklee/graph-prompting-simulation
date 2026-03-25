@@ -3,6 +3,7 @@ import { testCases } from '../data/test-cases';
 import { runNaiveAgent, runStructuredAgent } from '../agents/baseline';
 import { runGraphAgent } from '../agents/graph';
 import { evaluateRemediation } from './evaluator';
+import { evaluateProcessAdherence } from './processEvaluator';
 import { appendLog, readLogs } from '../utils/logger';
 import { randomUUID } from 'crypto';
 
@@ -39,6 +40,7 @@ export async function runSimulationMatrix(runsPerCombo = 5, targetModel?: ModelV
             if (!result) continue;
 
             const success = evaluateRemediation(testCase, result.output);
+            const processEval = evaluateProcessAdherence(strategy, result.rawAgentTrace || '');
             
             const logEntry: SimulationRun = {
               runId: randomUUID(),
@@ -47,11 +49,13 @@ export async function runSimulationMatrix(runsPerCombo = 5, targetModel?: ModelV
               strategy,
               testCaseId: testCase.id,
               success,
+              processAdherence: strategy === AgentStrategy.Naive ? false : processEval.followed,
               latencyMs: result.totalLatencyMs,
               totalTokens: result.totalTokens,
               turnCount: result.turnCount,
               rawOutput: result.output,
-              rawAgentTrace: result.rawAgentTrace || result.output
+              rawAgentTrace: result.rawAgentTrace || result.output,
+              stateTrace: processEval.trace
             };
 
             appendLog(logEntry);

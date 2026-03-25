@@ -8,11 +8,13 @@ export interface SimulationRun {
   strategy: string;
   testCaseId: string;
   success: boolean;
+  processAdherence?: boolean;
   latencyMs: number;
   totalTokens: number;
   turnCount: number;
   rawOutput: string;
   rawAgentTrace?: string;
+  stateTrace?: string[];
 }
 
 export function Dashboard() {
@@ -70,6 +72,9 @@ export function Dashboard() {
 
       const successes = strategyRuns.filter(d => d.success).length;
       entry[`${strategy}_successRate`] = Math.round((successes / strategyRuns.length) * 100);
+
+      const adherence = strategyRuns.filter(d => d.processAdherence).length;
+      entry[`${strategy}_processAdherence`] = strategy === 'naive' ? 0 : Math.round((adherence / strategyRuns.length) * 100);
       
       const avgLatency = strategyRuns.reduce((sum, run) => sum + run.latencyMs, 0) / strategyRuns.length;
       entry[`${strategy}_avgLatencyMs`] = Math.round(avgLatency);
@@ -82,13 +87,13 @@ export function Dashboard() {
     <div className="p-8 max-w-7xl mx-auto font-sans">
       <h1 className="text-3xl font-bold mb-8">Graph Prompting Simulation Dashboard</h1>
       
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-8 mb-8">
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-8 mb-8">
         <div className="bg-white p-6 rounded-lg shadow border border-gray-200">
-          <h2 className="text-xl font-semibold mb-4 text-gray-800">Success Rate by Model & Strategy (%)</h2>
+          <h2 className="text-xl font-semibold mb-4 text-gray-800">Success Rate (%)</h2>
           <div className="h-80">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={modelChartData}>
-                <XAxis dataKey="model" tick={{ fontSize: 12 }} interval={0} />
+                <XAxis dataKey="model" tick={{ fontSize: 10 }} interval={0} />
                 <YAxis domain={[0, 100]} />
                 <Tooltip />
                 <Legend />
@@ -96,7 +101,7 @@ export function Dashboard() {
                   <Bar 
                     key={`${strategy}_success`}
                     dataKey={`${strategy}_successRate`} 
-                    name={`${strategy} Success %`} 
+                    name={`${strategy}`} 
                     fill={strategyColors[strategy] || '#000'} 
                   />
                 ))}
@@ -106,11 +111,33 @@ export function Dashboard() {
         </div>
 
         <div className="bg-white p-6 rounded-lg shadow border border-gray-200">
-          <h2 className="text-xl font-semibold mb-4 text-gray-800">Avg Latency by Model & Strategy (ms)</h2>
+          <h2 className="text-xl font-semibold mb-4 text-gray-800">Process Adherence (%)</h2>
           <div className="h-80">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={modelChartData}>
-                <XAxis dataKey="model" tick={{ fontSize: 12 }} interval={0} />
+                <XAxis dataKey="model" tick={{ fontSize: 10 }} interval={0} />
+                <YAxis domain={[0, 100]} />
+                <Tooltip />
+                <Legend />
+                {strategies.filter(s => s !== 'naive').map(strategy => (
+                  <Bar 
+                    key={`${strategy}_adherence`}
+                    dataKey={`${strategy}_processAdherence`} 
+                    name={`${strategy}`} 
+                    fill={strategyColors[strategy] || '#000'} 
+                  />
+                ))}
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+        <div className="bg-white p-6 rounded-lg shadow border border-gray-200">
+          <h2 className="text-xl font-semibold mb-4 text-gray-800">Avg Latency (ms)</h2>
+          <div className="h-80">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={modelChartData}>
+                <XAxis dataKey="model" tick={{ fontSize: 10 }} interval={0} />
                 <YAxis />
                 <Tooltip />
                 <Legend />
@@ -118,7 +145,7 @@ export function Dashboard() {
                   <Bar 
                     key={`${strategy}_latency`}
                     dataKey={`${strategy}_avgLatencyMs`} 
-                    name={`${strategy} Latency (ms)`} 
+                    name={`${strategy}`} 
                     fill={strategyColors[strategy] || '#000'} 
                   />
                 ))}
