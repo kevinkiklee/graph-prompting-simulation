@@ -31,56 +31,79 @@ export function Dashboard() {
 
   if (!data.length) return <div className="p-8 text-center">Loading simulation results...</div>;
 
+  // Group data by Model, then by Strategy
+  const models = Array.from(new Set(data.map(d => d.model)));
   const strategies = Array.from(new Set(data.map(d => d.strategy)));
-  
-  const successRateData = strategies.map(strategy => {
-    const strategyRuns = data.filter(d => d.strategy === strategy);
-    const successes = strategyRuns.filter(d => d.success).length;
-    return {
-      strategy,
-      successRate: Math.round((successes / strategyRuns.length) * 100)
-    };
-  });
 
-  const latencyData = strategies.map(strategy => {
-    const strategyRuns = data.filter(d => d.strategy === strategy);
-    const avgLatency = strategyRuns.reduce((sum, run) => sum + run.latencyMs, 0) / strategyRuns.length;
-    return {
-      strategy,
-      avgLatencyMs: Math.round(avgLatency)
-    };
+  // Colors for different strategies
+  const strategyColors: Record<string, string> = {
+    'naive': '#94a3b8',      // slate-400
+    'structured': '#3b82f6', // blue-500
+    'graph': '#10b981'       // emerald-500
+  };
+
+  const modelChartData = models.map(model => {
+    const modelRuns = data.filter(d => d.model === model);
+    const entry: any = { model };
+
+    strategies.forEach(strategy => {
+      const strategyRuns = modelRuns.filter(d => d.strategy === strategy);
+      if (strategyRuns.length === 0) return;
+
+      const successes = strategyRuns.filter(d => d.success).length;
+      entry[\`\${strategy}_successRate\`] = Math.round((successes / strategyRuns.length) * 100);
+      
+      const avgLatency = strategyRuns.reduce((sum, run) => sum + run.latencyMs, 0) / strategyRuns.length;
+      entry[\`\${strategy}_avgLatencyMs\`] = Math.round(avgLatency);
+    });
+
+    return entry;
   });
 
   return (
-    <div className="p-8 max-w-6xl mx-auto font-sans">
+    <div className="p-8 max-w-7xl mx-auto font-sans">
       <h1 className="text-3xl font-bold mb-8">Graph Prompting Simulation Dashboard</h1>
       
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-8 mb-8">
         <div className="bg-white p-6 rounded-lg shadow border border-gray-200">
-          <h2 className="text-xl font-semibold mb-4 text-gray-800">Success Rate by Strategy (%)</h2>
-          <div className="h-64">
+          <h2 className="text-xl font-semibold mb-4 text-gray-800">Success Rate by Model & Strategy (%)</h2>
+          <div className="h-80">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={successRateData}>
-                <XAxis dataKey="strategy" />
+              <BarChart data={modelChartData}>
+                <XAxis dataKey="model" tick={{ fontSize: 12 }} interval={0} />
                 <YAxis domain={[0, 100]} />
                 <Tooltip />
                 <Legend />
-                <Bar dataKey="successRate" fill="#4f46e5" name="Success Rate %" />
+                {strategies.map(strategy => (
+                  <Bar 
+                    key={\`\${strategy}_success\`}
+                    dataKey={\`\${strategy}_successRate\`} 
+                    name={\`\${strategy} Success %\`} 
+                    fill={strategyColors[strategy] || '#000'} 
+                  />
+                ))}
               </BarChart>
             </ResponsiveContainer>
           </div>
         </div>
 
         <div className="bg-white p-6 rounded-lg shadow border border-gray-200">
-          <h2 className="text-xl font-semibold mb-4 text-gray-800">Avg Latency by Strategy (ms)</h2>
-          <div className="h-64">
+          <h2 className="text-xl font-semibold mb-4 text-gray-800">Avg Latency by Model & Strategy (ms)</h2>
+          <div className="h-80">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={latencyData}>
-                <XAxis dataKey="strategy" />
+              <BarChart data={modelChartData}>
+                <XAxis dataKey="model" tick={{ fontSize: 12 }} interval={0} />
                 <YAxis />
                 <Tooltip />
                 <Legend />
-                <Bar dataKey="avgLatencyMs" fill="#0ea5e9" name="Latency (ms)" />
+                {strategies.map(strategy => (
+                  <Bar 
+                    key={\`\${strategy}_latency\`}
+                    dataKey={\`\${strategy}_avgLatencyMs\`} 
+                    name={\`\${strategy} Latency (ms)\`} 
+                    fill={strategyColors[strategy] || '#000'} 
+                  />
+                ))}
               </BarChart>
             </ResponsiveContainer>
           </div>
