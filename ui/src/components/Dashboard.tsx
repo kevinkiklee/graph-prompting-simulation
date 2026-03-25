@@ -95,13 +95,13 @@ export function Dashboard() {
     <div className="p-8 max-w-7xl mx-auto font-sans">
       <h1 className="text-3xl font-bold mb-8">Graph Prompting Simulation Dashboard</h1>
       
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-8 mb-8">
+      <div className="flex flex-col gap-8 mb-8">
         <div className="bg-white p-6 rounded-lg shadow border border-gray-200">
           <h2 className="text-xl font-semibold mb-4 text-gray-800">Success Rate (%)</h2>
-          <div className="h-80">
+          <div className="h-96">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={modelChartData}>
-                <XAxis dataKey="model" tick={{ fontSize: 10 }} interval={0} />
+                <XAxis dataKey="model" tick={{ fontSize: 12 }} interval={0} />
                 <YAxis domain={[0, 100]} />
                 <Tooltip />
                 <Legend />
@@ -120,10 +120,10 @@ export function Dashboard() {
 
         <div className="bg-white p-6 rounded-lg shadow border border-gray-200">
           <h2 className="text-xl font-semibold mb-4 text-gray-800">Process Adherence (%)</h2>
-          <div className="h-80">
+          <div className="h-96">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={modelChartData}>
-                <XAxis dataKey="model" tick={{ fontSize: 10 }} interval={0} />
+                <XAxis dataKey="model" tick={{ fontSize: 12 }} interval={0} />
                 <YAxis domain={[0, 100]} />
                 <Tooltip />
                 <Legend />
@@ -142,10 +142,10 @@ export function Dashboard() {
 
         <div className="bg-white p-6 rounded-lg shadow border border-gray-200">
           <h2 className="text-xl font-semibold mb-4 text-gray-800">Avg Latency (ms)</h2>
-          <div className="h-80">
+          <div className="h-96">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={modelChartData}>
-                <XAxis dataKey="model" tick={{ fontSize: 10 }} interval={0} />
+                <XAxis dataKey="model" tick={{ fontSize: 12 }} interval={0} />
                 <YAxis />
                 <Tooltip />
                 <Legend />
