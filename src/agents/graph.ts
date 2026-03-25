@@ -4,6 +4,39 @@ import { callModel } from '../services/gemini';
 const PROCESS_GRAPH = `
 ## Process Flow
 
+### Node Descriptions
+
+**Core Nodes:**
+- \`Analyze Input\`: Read the initial request and identify the main goal.
+- \`Extract Context\`: Gather all constraints, requirements, and the provided buggy code or input text.
+- \`Determine Task Type\`: Decide whether the task is Engineering, Support, or Data.
+
+**Engineering Path:**
+- \`Threat Modeling\`: Identify potential security risks or edge cases in the requirements.
+- \`Design Architecture\`: Plan the code structure and approach before writing.
+- \`Architecture Review\`: Evaluate the design against constraints. If flaws exist, return to Design Architecture.
+- \`Implement Code\`: Write the actual code based on the approved architecture.
+- \`Code Review\`: Check the implemented code for bugs or missed requirements. If bugs are found, go to Refine Code.
+- \`Refine Code\`: Fix any issues found during Code Review.
+- \`Compile\`: Perform a final check to ensure the code is complete and syntactically valid.
+
+**Support Path:**
+- \`Sentiment Analysis\`: Determine the emotional tone of the customer (e.g., angry, confused).
+- \`Fetch Guidelines\`: Recall or determine the appropriate company policy for this situation.
+- \`Draft Response\`: Write the initial customer support reply.
+- \`Tone Check\`: Ensure the response matches the required tone (e.g., apologetic, professional). If inappropriate, redraft.
+- \`Escalation Check\`: Decide if this ticket requires manager intervention based on the customer's demands.
+- \`Route to Manager\`: Pass the ticket to a higher tier if it cannot be resolved.
+- \`Approve Response\`: Finalize the response if it can be sent directly to the customer.
+
+**Data Path:**
+- \`Identify Schema\`: Determine the table structures and relationships needed.
+- \`Write SQL\`: Draft the database query.
+- \`Optimize Query\`: Ensure the query is efficient and uses correct syntax.
+
+**Terminal Node:**
+- \`Format Output\`: Present the final code, SQL, or response text to the user.
+
 \`\`\`dot
 digraph complex_task_processing {
   "Analyze Input" [shape=box];
@@ -80,9 +113,11 @@ export async function runGraphAgent(model: string, testCase: TestCase) {
 Task: ${testCase.description}
 
 Execute the process graph from start to finish for the following input.
-INSTRUCTIONS: You MUST output your reasoning step-by-step. When you transition to a new node in the graph, you MUST explicitly output a marker with the exact node name wrapped in brackets like this: [STATE: Analyze Input]. Do not omit any steps!
-
-When you reach the "Format Output" terminal state, output the final result enclosed in \`\`\` ... \`\`\` blocks.
+INSTRUCTIONS: 
+1. You MUST output your reasoning step-by-step.
+2. When you transition to a new node in the graph, you MUST explicitly output a marker with the exact node name wrapped in brackets like this: [STATE: Analyze Input]. Do not omit any steps!
+3. The terminal state of this graph is EXACTLY "Format Output". You MUST reach this state and output the [STATE: Format Output] marker to complete the task.
+4. When you reach the "Format Output" terminal state, output the final result enclosed in \`\`\` ... \`\`\` blocks.
 
 Input to process:
 ${testCase.buggyCode}
@@ -91,9 +126,13 @@ ${testCase.buggyCode}
   const result = await callModel(model, graphPrompt);
   
   let extractedCode = result.text;
-  const match = extractedCode.match(/```(?:javascript|js|typescript|ts|sql)?\n([\s\S]*?)```/);
+  const match = result.text.match(/```(?:javascript|js|typescript|ts|sql)?\s*([\s\S]*?)```/);
   if (match && match[1]) {
     extractedCode = match[1].trim();
+  } else {
+    // If no code block is found, assume the entire output (or relevant parts) might be the answer.
+    // For support tasks, this is often just plain text.
+    extractedCode = result.text.trim();
   }
 
   return {

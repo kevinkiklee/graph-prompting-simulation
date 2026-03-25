@@ -2,7 +2,7 @@ import { AgentStrategy, ModelVersion, SimulationRun } from '../types';
 import { testCases } from '../data/test-cases';
 import { runNaiveAgent, runStructuredAgent } from '../agents/baseline';
 import { runGraphAgent } from '../agents/graph';
-import { evaluateRemediation } from './evaluator';
+import { evaluateRemediation, validateSyntax } from './evaluator';
 import { evaluateProcessAdherence } from './processEvaluator';
 import { appendLog, readLogs } from '../utils/logger';
 import { randomUUID } from 'crypto';
@@ -61,6 +61,7 @@ export async function runSimulationMatrix(runsPerCombo = 5, targetModel?: ModelV
 
         if (result) {
           const success = evaluateRemediation(testCase, result.output);
+          const syntaxValid = validateSyntax(testCase, result.output);
           const processEval = evaluateProcessAdherence(strategy, result.rawAgentTrace || '');
           
           const logEntry: SimulationRun = {
@@ -70,13 +71,18 @@ export async function runSimulationMatrix(runsPerCombo = 5, targetModel?: ModelV
             strategy,
             testCaseId: testCase.id,
             success,
+            syntaxValid,
             processAdherence: strategy === AgentStrategy.Naive ? false : processEval.followed,
             processAdherenceScore: strategy === AgentStrategy.Naive ? 0 : processEval.score,
-            latencyMs: result.totalLatencyMs,            totalTokens: result.totalTokens,
+            latencyMs: result.totalLatencyMs,
+            totalTokens: result.totalTokens,
+            tokensPerSecond: result.totalTokens / (result.totalLatencyMs / 1000),
             turnCount: result.turnCount,
             rawOutput: result.output,
             rawAgentTrace: result.rawAgentTrace || result.output,
-            stateTrace: processEval.trace
+            stateTrace: processEval.trace,
+            pathId: processEval.pathId,
+            errors: processEval.errors
           };
 
           appendLog(logEntry);
