@@ -1,21 +1,6 @@
 import { AgentStrategy } from '../types';
 
-const graphLowTransitions: Record<string, string[]> = {
-  'Analyze Request': ['Plan Fix'],
-  'Plan Fix': ['Write Code'],
-  'Write Code': ['Finalize Output'],
-  'Finalize Output': []
-};
-
-const graphMediumTransitions: Record<string, string[]> = {
-  'Analyze Request': ['Plan Fix'],
-  'Plan Fix': ['Write Code'],
-  'Write Code': ['Run Tests'],
-  'Run Tests': ['Plan Fix', 'Finalize Output'],
-  'Finalize Output': []
-};
-
-const graphHighTransitions: Record<string, string[]> = {
+const graphTransitions: Record<string, string[]> = {
   'Analyze Request': ['Categorize Domain'],
   'Categorize Domain': ['Threat Modeling', 'Draft Communication'],
   'Threat Modeling': ['Draft Architecture'],
@@ -30,13 +15,17 @@ const graphHighTransitions: Record<string, string[]> = {
 };
 
 const structuredTransitions: Record<string, string[]> = {
-  '1. Analyze Constraints': ['2. Identify Flaws'],
-  '2. Identify Flaws': ['3. Plan Remediation'],
-  '3. Plan Remediation': ['4. Draft Code'],
-  '4. Draft Code': ['5. Self-Critique against constraints'],
-  '5. Self-Critique against constraints': ['6. Refine Code'],
-  '6. Refine Code': ['7. Output final fixed code'],
-  '7. Output final fixed code': []
+  '1. Analyze Request': ['2. Categorize Domain'],
+  '2. Categorize Domain': ['3a. Threat Modeling', '3b. Draft Communication'],
+  '3a. Threat Modeling': ['4a. Draft Architecture'],
+  '4a. Draft Architecture': ['5a. Review Architecture'],
+  '5a. Review Architecture': ['4a. Draft Architecture', '6a. Implement Core Logic'],
+  '6a. Implement Core Logic': ['7a. Add Security Controls'],
+  '7a. Add Security Controls': ['8a. Run Self-Test'],
+  '8a. Run Self-Test': ['6a. Implement Core Logic', '9. Finalize Output'],
+  '3b. Draft Communication': ['4b. Review Tone'],
+  '4b. Review Tone': ['3b. Draft Communication', '9. Finalize Output'],
+  '9. Finalize Output': []
 };
 
 export function evaluateProcessAdherence(strategy: AgentStrategy, traceText: string): { followed: boolean, trace: string[] } {
@@ -53,23 +42,9 @@ export function evaluateProcessAdherence(strategy: AgentStrategy, traceText: str
 
   if (trace.length === 0) return { followed: false, trace: [] };
 
-  let transitions: Record<string, string[]> = structuredTransitions;
-  let initialState = '1. Analyze Constraints';
-  let terminalState = '7. Output final fixed code';
-
-  if (strategy === AgentStrategy.GraphLow) {
-    transitions = graphLowTransitions;
-    initialState = 'Analyze Request';
-    terminalState = 'Finalize Output';
-  } else if (strategy === AgentStrategy.GraphMedium) {
-    transitions = graphMediumTransitions;
-    initialState = 'Analyze Request';
-    terminalState = 'Finalize Output';
-  } else if (strategy === AgentStrategy.GraphHigh) {
-    transitions = graphHighTransitions;
-    initialState = 'Analyze Request';
-    terminalState = 'Finalize Output';
-  }
+  const transitions = strategy === AgentStrategy.Graph ? graphTransitions : structuredTransitions;
+  const initialState = strategy === AgentStrategy.Graph ? 'Analyze Request' : '1. Analyze Request';
+  const terminalState = strategy === AgentStrategy.Graph ? 'Finalize Output' : '9. Finalize Output';
 
   const isMatch = (actual: string, expected: string) => {
     const norm = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/g, '');

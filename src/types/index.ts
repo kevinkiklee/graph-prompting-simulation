@@ -1,9 +1,7 @@
 export enum AgentStrategy {
   Naive = "naive",
   Structured = "structured",
-  GraphLow = "graph_low",
-  GraphMedium = "graph_medium",
-  GraphHigh = "graph_high"
+  Graph = "graph"
 }
 
 export enum ModelVersion {

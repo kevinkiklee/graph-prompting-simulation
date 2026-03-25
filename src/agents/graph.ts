@@ -1,44 +1,7 @@
 import { TestCase } from '../types';
 import { callModel } from '../services/gemini';
 
-const GRAPH_LOW = `
-## Process Flow
-
-\`\`\`dot
-digraph task_processing {
-  "Analyze Request" [shape=box];
-  "Plan Fix" [shape=box];
-  "Write Code" [shape=box];
-  "Finalize Output" [shape=doublecircle];
-
-  "Analyze Request" -> "Plan Fix";
-  "Plan Fix" -> "Write Code";
-  "Write Code" -> "Finalize Output";
-}
-\`\`\`
-`;
-
-const GRAPH_MEDIUM = `
-## Process Flow
-
-\`\`\`dot
-digraph task_processing {
-  "Analyze Request" [shape=box];
-  "Plan Fix" [shape=box];
-  "Write Code" [shape=box];
-  "Run Tests" [shape=diamond];
-  "Finalize Output" [shape=doublecircle];
-
-  "Analyze Request" -> "Plan Fix";
-  "Plan Fix" -> "Write Code";
-  "Write Code" -> "Run Tests";
-  "Run Tests" -> "Plan Fix" [label="Tests failed"];
-  "Run Tests" -> "Finalize Output" [label="Tests passed"];
-}
-\`\`\`
-`;
-
-const GRAPH_HIGH = `
+const PROCESS_GRAPH = `
 ## Process Flow
 
 \`\`\`dot
@@ -76,12 +39,8 @@ digraph task_processing {
 \`\`\`
 `;
 
-export async function runGraphAgent(model: string, testCase: TestCase, level: 'low' | 'medium' | 'high') {
-  let selectedGraph = GRAPH_LOW;
-  if (level === 'medium') selectedGraph = GRAPH_MEDIUM;
-  if (level === 'high') selectedGraph = GRAPH_HIGH;
-
-  const systemBase = `You are an expert agent following a strict process graph.\n${selectedGraph}`;
+export async function runGraphAgent(model: string, testCase: TestCase) {
+  const systemBase = `You are an expert agent following a strict process graph.\n${PROCESS_GRAPH}`;
 
   const graphPrompt = `${systemBase}
 

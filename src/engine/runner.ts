@@ -33,12 +33,8 @@ export async function runSimulationMatrix(runsPerCombo = 5, targetModel?: ModelV
               result = await runNaiveAgent(model, testCase);
             } else if (strategy === AgentStrategy.Structured) {
               result = await runStructuredAgent(model, testCase);
-            } else if (strategy === AgentStrategy.GraphLow) {
-              result = await runGraphAgent(model, testCase, 'low');
-            } else if (strategy === AgentStrategy.GraphMedium) {
-              result = await runGraphAgent(model, testCase, 'medium');
-            } else if (strategy === AgentStrategy.GraphHigh) {
-              result = await runGraphAgent(model, testCase, 'high');
+            } else if (strategy === AgentStrategy.Graph) {
+              result = await runGraphAgent(model, testCase);
             }
 
             if (!result) continue;

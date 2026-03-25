@@ -55,7 +55,7 @@ export function Dashboard() {
   });
 
   const rawStrategies = Array.from(new Set(data.map(d => d.strategy)));
-  const strategyOrder = ['naive', 'structured', 'graph_low', 'graph_medium', 'graph_high'];
+  const strategyOrder = ['naive', 'structured', 'graph'];
   const strategies = rawStrategies.sort((a, b) => {
     const indexA = strategyOrder.indexOf(a);
     const indexB = strategyOrder.indexOf(b);
@@ -64,11 +64,9 @@ export function Dashboard() {
 
   // Colors for different strategies
   const strategyColors: Record<string, string> = {
-    'naive': '#94a3b8',        // slate-400
-    'structured': '#3b82f6',   // blue-500
-    'graph_low': '#a7f3d0',    // emerald-200
-    'graph_medium': '#34d399', // emerald-400
-    'graph_high': '#059669'    // emerald-600
+    'naive': '#94a3b8',      // slate-400
+    'structured': '#3b82f6', // blue-500
+    'graph': '#10b981'       // emerald-500
   };
 
   const modelChartData = models.map(model => {
@@ -109,9 +107,7 @@ export function Dashboard() {
                 <Legend />
                 <Bar key="naive_success" dataKey="naive_successRate" name="naive" fill={strategyColors['naive']} />
                 <Bar key="structured_success" dataKey="structured_successRate" name="structured" fill={strategyColors['structured']} />
-                <Bar key="graph_low_success" dataKey="graph_low_successRate" name="graph_low" fill={strategyColors['graph_low']} />
-                <Bar key="graph_medium_success" dataKey="graph_medium_successRate" name="graph_medium" fill={strategyColors['graph_medium']} />
-                <Bar key="graph_high_success" dataKey="graph_high_successRate" name="graph_high" fill={strategyColors['graph_high']} />
+                <Bar key="graph_success" dataKey="graph_successRate" name="graph" fill={strategyColors['graph']} />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -127,9 +123,7 @@ export function Dashboard() {
                 <Tooltip />
                 <Legend />
                 <Bar key="structured_adherence" dataKey="structured_processAdherence" name="structured" fill={strategyColors['structured']} />
-                <Bar key="graph_low_adherence" dataKey="graph_low_processAdherence" name="graph_low" fill={strategyColors['graph_low']} />
-                <Bar key="graph_medium_adherence" dataKey="graph_medium_processAdherence" name="graph_medium" fill={strategyColors['graph_medium']} />
-                <Bar key="graph_high_adherence" dataKey="graph_high_processAdherence" name="graph_high" fill={strategyColors['graph_high']} />
+                <Bar key="graph_adherence" dataKey="graph_processAdherence" name="graph" fill={strategyColors['graph']} />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -146,9 +140,7 @@ export function Dashboard() {
                 <Legend />
                 <Bar key="naive_latency" dataKey="naive_avgLatencyMs" name="naive" fill={strategyColors['naive']} />
                 <Bar key="structured_latency" dataKey="structured_avgLatencyMs" name="structured" fill={strategyColors['structured']} />
-                <Bar key="graph_low_latency" dataKey="graph_low_avgLatencyMs" name="graph_low" fill={strategyColors['graph_low']} />
-                <Bar key="graph_medium_latency" dataKey="graph_medium_avgLatencyMs" name="graph_medium" fill={strategyColors['graph_medium']} />
-                <Bar key="graph_high_latency" dataKey="graph_high_avgLatencyMs" name="graph_high" fill={strategyColors['graph_high']} />
+                <Bar key="graph_latency" dataKey="graph_avgLatencyMs" name="graph" fill={strategyColors['graph']} />
               </BarChart>
             </ResponsiveContainer>
           </div>
