@@ -30,13 +30,15 @@ The simulation will test the following Gemini models individually to observe how
 - **Size:** 10 distinct, predefined code snippets.
 - **Categories:** A mix of Security Flaws (SQLi, XSS), Logic Bugs (off-by-one, improper state handling), and Maintainability issues.
 - **Evaluation:** Each snippet will have an associated automated grading function or static analysis check to determine if the remediation was successful without breaking core functionality.
-
 ## 3. Execution Engine
 - **Runner:** A script that iterates through the (Model × Strategy × Test Case) combinations.
 - **Scale:** Configurable runs per combination (default: 5 runs to account for LLM stochasticity). Total expected runs per full test suite: 4 * 3 * 10 * 5 = 600 runs.
 - **Concurrency:** Configurable parallel execution (e.g., running 3-5 tests simultaneously) to respect API rate limits while optimizing total runtime.
+- **Resumability:** The runner will scan the existing `results.jsonl` log file at startup to identify which (Model, Strategy, TestCase, RunNumber) combinations have already been completed. It will automatically skip these and only execute the remaining tasks. This ensures that if the process is interrupted (e.g., due to quota exhaustion or crash), it can be resumed without duplicate effort.
 
 ## 4. Logging and Metrics
+...
+
 All results will be logged to local files (e.g., JSONLines) for persistence and UI ingestion.
 
 ### 4.1 Tracked Metrics
