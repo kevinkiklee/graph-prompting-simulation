@@ -1,1 +1,4 @@
 .worktrees/
+results.jsonl
+.env
+node_modules

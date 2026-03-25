@@ -2,63 +2,86 @@ import { TestCase } from '../types';
 
 export const testCases: TestCase[] = [
   {
-    id: 'sql-injection-01',
-    description: 'Basic SQL injection vulnerability in a login query.',
-    buggyCode: 'const query = "SELECT * FROM users WHERE username = \'" + username + "\' AND password = \'" + password + "\'";',
-    expectedMatchRegex: /WHERE\s+username\s*=\s*\$[1-9]|WHERE\s+username\s*=\s*\?|Parameterized|query\(\s*["']SELECT.*WHERE.*username\s*=\s*\$1["']/i
+    id: 'concurrent-task-scheduler',
+    description: 'Implement a task scheduler `runTasks(tasks, concurrency)`. It must run up to `concurrency` async tasks simultaneously. It MUST return results in the exact original order. It MUST handle promise rejections by returning the Error object in the results array instead of throwing. You MUST use a `Set` to track currently running promises.',
+    buggyCode: `
+async function runTasks(tasks, concurrency) {
+  const results = [];
+  for (const task of tasks) {
+    results.push(await task());
+  }
+  return results;
+}
+    `.trim(),
+    expectedMatchRegex: /Set[\s\S]*catch|catch[\s\S]*Set/i
   },
   {
-    id: 'xss-01',
-    description: 'Reflected XSS in a React component.',
-    buggyCode: 'function Greeting({ name }) { return <div dangerouslySetInnerHTML={{ __html: name }} />; }',
-    expectedMatchRegex: /<div>\s*\{\s*name\s*\}\s*<\/div>/
+    id: 'secure-deep-merge',
+    description: 'Implement `deepMerge(target, source)`. It MUST prevent Prototype Pollution by strictly blocking keys "__proto__", "constructor", and "prototype". It MUST handle circular references using a `WeakMap`. It MUST NOT mutate the input objects (return a newly created object).',
+    buggyCode: `
+function deepMerge(target, source) {
+  for (const key in source) {
+    if (typeof source[key] === 'object' && source[key] !== null) {
+      target[key] = target[key] || {};
+      deepMerge(target[key], source[key]);
+    } else {
+      target[key] = source[key];
+    }
+  }
+  return target;
+}
+    `.trim(),
+    expectedMatchRegex: /WeakMap[\s\S]*__proto__|__proto__[\s\S]*WeakMap/i
   },
   {
-    id: 'logic-off-by-one',
-    description: 'Off by one error in loop condition.',
-    buggyCode: 'for (let i = 0; i <= array.length; i++) { sum += array[i]; }',
-    expectedMatchRegex: /i\s*<\s*array\.length|let\s+i\s*=\s*0;\s*i\s*<\s*array\.length/
+    id: 'crypto-token-gen',
+    description: 'Create `generateToken()`. It MUST use `crypto.randomBytes`. It MUST return a hex string exactly 64 characters long (requires 32 bytes). It MUST be asynchronous by wrapping the callback version of `crypto.randomBytes` in a Promise. Do NOT use the synchronous `crypto.randomBytesSync`.',
+    buggyCode: `
+const crypto = require('crypto');
+function generateToken() {
+  return crypto.randomBytes(32).toString('hex'); // Synchronous and blocks event loop!
+}
+    `.trim(),
+    expectedMatchRegex: /new Promise[\s\S]*randomBytes|randomBytes[\s\S]*new Promise/i
   },
   {
-    id: 'race-condition-01',
-    description: 'Asynchronous race condition without Promise.all.',
-    buggyCode: 'async function processAll(items) { items.forEach(async (item) => { await process(item); }); }',
-    expectedMatchRegex: /Promise\.all/
+    id: 'lru-cache-optimal',
+    description: 'Implement an LRU Cache class `LRUCache` with `get(key)` and `set(key, value)`. It MUST use an ES6 `Map` to achieve O(1) time complexity and rely on Map\'s native insertion order tracking. When capacity is exceeded, it MUST delete the oldest item using exactly `this.cache.keys().next().value` (assuming your Map is named cache).',
+    buggyCode: `
+class LRUCache {
+  constructor(capacity) { this.capacity = capacity; this.cache = {}; this.order = []; }
+  get(key) {
+    if (!this.cache[key]) return -1;
+    this.order = this.order.filter(k => k !== key);
+    this.order.push(key);
+    return this.cache[key];
+  }
+  set(key, value) {
+    if (this.order.length >= this.capacity) {
+      const oldest = this.order.shift();
+      delete this.cache[oldest];
+    }
+    this.cache[key] = value;
+    this.order.push(key);
+  }
+}
+    `.trim(),
+    expectedMatchRegex: /\.keys\(\)\.next\(\)\.value/
   },
   {
-    id: 'auth-bypass-01',
-    description: 'Hardcoded admin credentials.',
-    buggyCode: 'if (user.username === "admin" && user.password === "admin123") { grantAdmin(); }',
-    expectedMatchRegex: /bcrypt|hash|process\.env|environment variables/i
-  },
-  {
-    id: 'unhandled-promise',
-    description: 'Unhandled promise rejection in express route.',
-    buggyCode: 'app.get("/data", (req, res) => { fetchFromDB().then(data => res.json(data)); });',
-    expectedMatchRegex: /catch\(|try\s*\{/
-  },
-  {
-    id: 'path-traversal-01',
-    description: 'Path traversal vulnerability in file reader.',
-    buggyCode: 'app.get("/file", (req, res) => { const file = fs.readFileSync("/var/www/uploads/" + req.query.filename); res.send(file); });',
-    expectedMatchRegex: /path\.resolve|path\.basename|sanitize/i
-  },
-  {
-    id: 'insecure-random',
-    description: 'Using Math.random for crypto keys.',
-    buggyCode: 'function generateSessionToken() { return Math.random().toString(36).substr(2); }',
-    expectedMatchRegex: /crypto\.randomBytes|crypto\.getRandomValues/
-  },
-  {
-    id: 'command-injection-01',
-    description: 'Command injection via child_process.',
-    buggyCode: 'exec("ls " + req.query.dir, (err, stdout) => { res.send(stdout); });',
-    expectedMatchRegex: /execFile|spawn|sanitize/i
-  },
-  {
-    id: 'memory-leak-01',
-    description: 'Memory leak by adding to global array without clearing.',
-    buggyCode: 'const cache = []; function cacheData(data) { cache.push(data); }',
-    expectedMatchRegex: /WeakMap|Map|LRU|cache\.length\s*>\s*MAX/i
+    id: 'state-machine-parser',
+    description: 'Fix this state machine parser `parseCommands(str)`. State starts at 0. \'A\' adds 1, \'B\' multiplies by 2, \'C\' subtracts 1. It MUST process the string in a single pass using `Array.prototype.reduce`. It MUST throw a `TypeError` immediately if an invalid character is encountered.',
+    buggyCode: `
+function parseCommands(str) {
+  let state = 0;
+  for (let i = 0; i < str.length; i++) {
+    if (str[i] === 'A') state += 1;
+    if (str[i] === 'B') state *= 2;
+    if (str[i] === 'C') state -= 1;
+  }
+  return state;
+}
+    `.trim(),
+    expectedMatchRegex: /\.reduce\([\s\S]*TypeError|TypeError[\s\S]*\.reduce\(/i
   }
 ];

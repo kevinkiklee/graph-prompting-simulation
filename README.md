@@ -54,6 +54,9 @@ npm start -- --runs 2
 To test models in parallel across different terminal windows, you can restrict the runner to a single model:
 ```bash
 npm start -- --model gemini-3.1-pro-preview
+npm start -- --model gemini-3-flash-preview
+npm start -- --model gemini-2.5-pro
+npm start -- --model gemini-2.5-flash
 ```
 
 **Available Models:**
