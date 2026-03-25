@@ -32,7 +32,22 @@ export function Dashboard() {
   if (!data.length) return <div className="p-8 text-center">Loading simulation results...</div>;
 
   // Group data by Model, then by Strategy
-  const models = Array.from(new Set(data.map(d => d.model)));
+  const rawModels = Array.from(new Set(data.map(d => d.model)));
+  
+  // Custom sort order for models
+  const modelOrder = [
+    'gemini-2.5-flash',
+    'gemini-2.5-pro',
+    'gemini-3-flash-preview',
+    'gemini-3.1-pro-preview'
+  ];
+  
+  const models = rawModels.sort((a, b) => {
+    const indexA = modelOrder.indexOf(a);
+    const indexB = modelOrder.indexOf(b);
+    return (indexA === -1 ? 999 : indexA) - (indexB === -1 ? 999 : indexB);
+  });
+
   const strategies = Array.from(new Set(data.map(d => d.strategy)));
 
   // Colors for different strategies
