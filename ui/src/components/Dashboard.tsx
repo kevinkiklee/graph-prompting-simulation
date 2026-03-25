@@ -105,14 +105,9 @@ export function Dashboard() {
                 <YAxis domain={[0, 100]} />
                 <Tooltip />
                 <Legend />
-                {strategies.map(strategy => (
-                  <Bar 
-                    key={`${strategy}_success`}
-                    dataKey={`${strategy}_successRate`} 
-                    name={`${strategy}`} 
-                    fill={strategyColors[strategy] || '#000'} 
-                  />
-                ))}
+                <Bar key="naive_success" dataKey="naive_successRate" name="naive" fill={strategyColors['naive']} />
+                <Bar key="structured_success" dataKey="structured_successRate" name="structured" fill={strategyColors['structured']} />
+                <Bar key="graph_success" dataKey="graph_successRate" name="graph" fill={strategyColors['graph']} />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -127,14 +122,8 @@ export function Dashboard() {
                 <YAxis domain={[0, 100]} />
                 <Tooltip />
                 <Legend />
-                {strategies.filter(s => s !== 'naive').map(strategy => (
-                  <Bar 
-                    key={`${strategy}_adherence`}
-                    dataKey={`${strategy}_processAdherence`} 
-                    name={`${strategy}`} 
-                    fill={strategyColors[strategy] || '#000'} 
-                  />
-                ))}
+                <Bar key="structured_adherence" dataKey="structured_processAdherence" name="structured" fill={strategyColors['structured']} />
+                <Bar key="graph_adherence" dataKey="graph_processAdherence" name="graph" fill={strategyColors['graph']} />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -149,14 +138,9 @@ export function Dashboard() {
                 <YAxis />
                 <Tooltip />
                 <Legend />
-                {strategies.map(strategy => (
-                  <Bar 
-                    key={`${strategy}_latency`}
-                    dataKey={`${strategy}_avgLatencyMs`} 
-                    name={`${strategy}`} 
-                    fill={strategyColors[strategy] || '#000'} 
-                  />
-                ))}
+                <Bar key="naive_latency" dataKey="naive_avgLatencyMs" name="naive" fill={strategyColors['naive']} />
+                <Bar key="structured_latency" dataKey="structured_avgLatencyMs" name="structured" fill={strategyColors['structured']} />
+                <Bar key="graph_latency" dataKey="graph_avgLatencyMs" name="graph" fill={strategyColors['graph']} />
               </BarChart>
             </ResponsiveContainer>
           </div>
