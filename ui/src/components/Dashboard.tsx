@@ -38,21 +38,29 @@ export function Dashboard() {
   // Group data by Model, then by Strategy
   const rawModels = Array.from(new Set(data.map(d => d.model)));
   
-  // Custom sort order for models
+  // Custom sort order for models and strategies
   const modelOrder = [
     'gemini-2.5-flash',
     'gemini-2.5-pro',
-    'gemini-3-flash-preview',
-    'gemini-3.1-pro-preview'
+    'gemini-3-flash',
+    'gemini-3.1-pro'
   ];
   
   const models = rawModels.sort((a, b) => {
-    const indexA = modelOrder.indexOf(a);
-    const indexB = modelOrder.indexOf(b);
+    const displayA = a.replace('-preview', '');
+    const displayB = b.replace('-preview', '');
+    const indexA = modelOrder.indexOf(displayA);
+    const indexB = modelOrder.indexOf(displayB);
     return (indexA === -1 ? 999 : indexA) - (indexB === -1 ? 999 : indexB);
   });
 
-  const strategies = Array.from(new Set(data.map(d => d.strategy)));
+  const rawStrategies = Array.from(new Set(data.map(d => d.strategy)));
+  const strategyOrder = ['naive', 'structured', 'graph'];
+  const strategies = rawStrategies.sort((a, b) => {
+    const indexA = strategyOrder.indexOf(a);
+    const indexB = strategyOrder.indexOf(b);
+    return (indexA === -1 ? 999 : indexA) - (indexB === -1 ? 999 : indexB);
+  });
 
   // Colors for different strategies
   const strategyColors: Record<string, string> = {
