@@ -85,6 +85,9 @@ export function Dashboard() {
       const adherence = strategyRuns.filter(d => d.processAdherence).length;
       entry[`${strategy}_processAdherence`] = strategy === 'naive' ? 0 : Math.round((adherence / strategyRuns.length) * 100);
       
+      const adherenceScoreSum = strategyRuns.reduce((sum, run) => sum + (run.processAdherenceScore || 0), 0);
+      entry[`${strategy}_processAdherenceScore`] = strategy === 'naive' ? 0 : Math.round((adherenceScoreSum / strategyRuns.length) * 100);
+      
       const avgLatency = strategyRuns.reduce((sum, run) => sum + run.latencyMs, 0) / strategyRuns.length;
       entry[`${strategy}_avgLatencyMs`] = Math.round(avgLatency);
     });
@@ -123,8 +126,8 @@ export function Dashboard() {
                 <YAxis domain={[0, 100]} />
                 <Tooltip />
                 <Legend />
-                <Bar key="structured_adherence" dataKey="structured_processAdherence" name="structured" fill={strategyColors['structured']} />
-                <Bar key="graph_adherence" dataKey="graph_processAdherence" name="graph" fill={strategyColors['graph']} />
+                <Bar key="structured_adherence" dataKey="structured_processAdherenceScore" name="structured" fill={strategyColors['structured']} />
+                <Bar key="graph_adherence" dataKey="graph_processAdherenceScore" name="graph" fill={strategyColors['graph']} />
               </BarChart>
             </ResponsiveContainer>
           </div>
