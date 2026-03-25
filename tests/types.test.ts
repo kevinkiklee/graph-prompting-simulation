@@ -3,7 +3,7 @@ import { AgentStrategy, ModelVersion } from '../src/types';
 
 describe('Types', () => {
   it('should have correct enum values', () => {
-    expect(AgentStrategy.Graph).toBe('graph');
+    expect(AgentStrategy.GraphHigh).toBe('graph_high');
     expect(ModelVersion.Gemini31ProPreview).toBe('gemini-3.1-pro-preview');
   });
 });

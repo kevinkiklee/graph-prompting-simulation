@@ -41,8 +41,8 @@ describe('Agents', () => {
   });
 
   it('runGraphAgent should return correct format and aggregate values', async () => {
-    mockResponses = ['State: Analyze code\n```javascript\nfinal fixed code\n```'];
-    const result = await runGraphAgent('model', mockTestCase);
+    mockResponses = ['State: Analyze Request\n```javascript\nfinal fixed code\n```'];
+    const result = await runGraphAgent('model', mockTestCase, 'low');
     expect(result.output).toBe('final fixed code');
     expect(result.totalLatencyMs).toBe(100); 
     expect(result.totalTokens).toBe(10); 
