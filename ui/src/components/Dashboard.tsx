@@ -59,7 +59,8 @@ export function Dashboard() {
 
   const modelChartData = models.map(model => {
     const modelRuns = data.filter(d => d.model === model);
-    const entry: any = { model };
+    const displayModel = model.replace('-preview', '');
+    const entry: any = { model: displayModel };
 
     strategies.forEach(strategy => {
       const strategyRuns = modelRuns.filter(d => d.strategy === strategy);
