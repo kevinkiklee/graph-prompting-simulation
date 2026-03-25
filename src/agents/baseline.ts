@@ -2,7 +2,7 @@ import { TestCase } from '../types';
 import { callModel } from '../services/gemini';
 
 export async function runNaiveAgent(model: string, testCase: TestCase) {
-  const prompt = `Task: ${testCase.description}\n\nFix the security and logic issues in this code:\n\n${testCase.buggyCode}\n\nOutput only the fixed code.`;
+  const prompt = `Task: ${testCase.description}\n\nInput to process:\n\n${testCase.buggyCode}\n\nOutput only the final required result.`;
   const result = await callModel(model, prompt);
   
   return {
@@ -15,11 +15,11 @@ export async function runNaiveAgent(model: string, testCase: TestCase) {
 }
 
 export async function runStructuredAgent(model: string, testCase: TestCase) {
-  const prompt = `You are an expert secure code reviewer.\n\nTask: ${testCase.description}\n\nProcess:\n1. Analyze Constraints\n2. Identify Flaws\n3. Plan Remediation\n4. Draft Code\n5. Self-Critique against constraints\n6. Refine Code\n7. Output final fixed code.\n\nCode to review:\n${testCase.buggyCode}\n\nINSTRUCTIONS: You MUST output your reasoning step-by-step. When you start a step, you MUST prefix it with exactly [STATE: <step name>], for example: "[STATE: 1. Analyze Constraints]".\nOutput the final code wrapped in \`\`\`javascript ... \`\`\` code blocks during step 7.`;
+  const prompt = `You are an expert agent following a strict process checklist.\n\nTask: ${testCase.description}\n\nProcess:\n1. Analyze Input\n2. Extract Context\n3. Determine Task Type\n   - If Engineering, proceed to 4a.\n   - If Support, proceed to 4b.\n   - If Data, proceed to 4c.\n\n[Engineering Path]\n4a. Threat Modeling\n5a. Design Architecture\n6a. Architecture Review (If flaws found, go back to 5a)\n7a. Implement Code\n8a. Code Review (If bugs found, go to 9a. If tests pass, go to 10a)\n9a. Refine Code (After refining, return to 8a)\n10a. Compile (Proceed to 11)\n\n[Support Path]\n4b. Sentiment Analysis\n5b. Fetch Guidelines\n6b. Draft Response\n7b. Tone Check (If inappropriate, go back to 6b)\n8b. Escalation Check (If needs escalation, go to 9b. If can resolve, go to 10b)\n9b. Route to Manager (Proceed to 11)\n10b. Approve Response (Proceed to 11)\n\n[Data Path]\n4c. Identify Schema\n5c. Write SQL\n6c. Optimize Query (Proceed to 11)\n\n11. Format Output\n\nInput to process:\n${testCase.buggyCode}\n\nINSTRUCTIONS: You MUST output your reasoning step-by-step. When you start a step, you MUST prefix it with exactly [STATE: <step name>], for example: "[STATE: 1. Analyze Input]".\nOutput the final result wrapped in \`\`\` ... \`\`\` code blocks during step 11.`;
   const result = await callModel(model, prompt);
   
   let extractedCode = result.text;
-  const match = extractedCode.match(/```(?:javascript|js|typescript|ts)?\n([\s\S]*?)```/);
+  const match = extractedCode.match(/```(?:javascript|js|typescript|ts|sql)?\n([\s\S]*?)```/);
   if (match && match[1]) {
     extractedCode = match[1].trim();
   }

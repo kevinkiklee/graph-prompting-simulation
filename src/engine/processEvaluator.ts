@@ -1,31 +1,59 @@
 import { AgentStrategy } from '../types';
 
 const graphTransitions: Record<string, string[]> = {
-  'Analyze Request': ['Categorize Domain'],
-  'Categorize Domain': ['Threat Modeling', 'Draft Communication'],
-  'Threat Modeling': ['Draft Architecture'],
-  'Draft Architecture': ['Review Architecture'],
-  'Review Architecture': ['Draft Architecture', 'Implement Core Logic'],
-  'Implement Core Logic': ['Add Security Controls'],
-  'Add Security Controls': ['Run Self-Test'],
-  'Run Self-Test': ['Implement Core Logic', 'Finalize Output'],
-  'Draft Communication': ['Review Tone'],
-  'Review Tone': ['Draft Communication', 'Finalize Output'],
-  'Finalize Output': []
+  'Analyze Input': ['Extract Context'],
+  'Extract Context': ['Determine Task Type'],
+  'Determine Task Type': ['Threat Modeling', 'Sentiment Analysis', 'Identify Schema'],
+  
+  'Threat Modeling': ['Design Architecture'],
+  'Design Architecture': ['Architecture Review'],
+  'Architecture Review': ['Design Architecture', 'Implement Code'],
+  'Implement Code': ['Code Review'],
+  'Code Review': ['Refine Code', 'Compile'],
+  'Refine Code': ['Code Review'],
+  'Compile': ['Format Output'],
+
+  'Sentiment Analysis': ['Fetch Guidelines'],
+  'Fetch Guidelines': ['Draft Response'],
+  'Draft Response': ['Tone Check'],
+  'Tone Check': ['Draft Response', 'Escalation Check'],
+  'Escalation Check': ['Route to Manager', 'Approve Response'],
+  'Route to Manager': ['Format Output'],
+  'Approve Response': ['Format Output'],
+
+  'Identify Schema': ['Write SQL'],
+  'Write SQL': ['Optimize Query'],
+  'Optimize Query': ['Format Output'],
+
+  'Format Output': []
 };
 
 const structuredTransitions: Record<string, string[]> = {
-  '1. Analyze Request': ['2. Categorize Domain'],
-  '2. Categorize Domain': ['3a. Threat Modeling', '3b. Draft Communication'],
-  '3a. Threat Modeling': ['4a. Draft Architecture'],
-  '4a. Draft Architecture': ['5a. Review Architecture'],
-  '5a. Review Architecture': ['4a. Draft Architecture', '6a. Implement Core Logic'],
-  '6a. Implement Core Logic': ['7a. Add Security Controls'],
-  '7a. Add Security Controls': ['8a. Run Self-Test'],
-  '8a. Run Self-Test': ['6a. Implement Core Logic', '9. Finalize Output'],
-  '3b. Draft Communication': ['4b. Review Tone'],
-  '4b. Review Tone': ['3b. Draft Communication', '9. Finalize Output'],
-  '9. Finalize Output': []
+  '1. Analyze Input': ['2. Extract Context'],
+  '2. Extract Context': ['3. Determine Task Type'],
+  '3. Determine Task Type': ['4a. Threat Modeling', '4b. Sentiment Analysis', '4c. Identify Schema'],
+
+  '4a. Threat Modeling': ['5a. Design Architecture'],
+  '5a. Design Architecture': ['6a. Architecture Review'],
+  '6a. Architecture Review': ['5a. Design Architecture', '7a. Implement Code'],
+  '7a. Implement Code': ['8a. Code Review'],
+  '8a. Code Review': ['9a. Refine Code', '10a. Compile'],
+  '9a. Refine Code': ['8a. Code Review'],
+  '10a. Compile': ['11. Format Output'],
+
+  '4b. Sentiment Analysis': ['5b. Fetch Guidelines'],
+  '5b. Fetch Guidelines': ['6b. Draft Response'],
+  '6b. Draft Response': ['7b. Tone Check'],
+  '7b. Tone Check': ['6b. Draft Response', '8b. Escalation Check'],
+  '8b. Escalation Check': ['9b. Route to Manager', '10b. Approve Response'],
+  '9b. Route to Manager': ['11. Format Output'],
+  '10b. Approve Response': ['11. Format Output'],
+
+  '4c. Identify Schema': ['5c. Write SQL'],
+  '5c. Write SQL': ['6c. Optimize Query'],
+  '6c. Optimize Query': ['11. Format Output'],
+
+  '11. Format Output': []
 };
 
 export function evaluateProcessAdherence(strategy: AgentStrategy, traceText: string): { followed: boolean, trace: string[] } {
@@ -43,8 +71,8 @@ export function evaluateProcessAdherence(strategy: AgentStrategy, traceText: str
   if (trace.length === 0) return { followed: false, trace: [] };
 
   const transitions = strategy === AgentStrategy.Graph ? graphTransitions : structuredTransitions;
-  const initialState = strategy === AgentStrategy.Graph ? 'Analyze Request' : '1. Analyze Request';
-  const terminalState = strategy === AgentStrategy.Graph ? 'Finalize Output' : '9. Finalize Output';
+  const initialState = strategy === AgentStrategy.Graph ? 'Analyze Input' : '1. Analyze Input';
+  const terminalState = strategy === AgentStrategy.Graph ? 'Format Output' : '11. Format Output';
 
   const isMatch = (actual: string, expected: string) => {
     const norm = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/g, '');
