@@ -5,17 +5,24 @@ const PROCESS_GRAPH = `
 ## Process Flow
 
 \`\`\`dot
-digraph remediation {
+digraph task_processing {
   "Analyze Request" [shape=box];
+  "Categorize Domain" [shape=diamond];
   "Threat Modeling" [shape=box];
   "Draft Architecture" [shape=box];
   "Review Architecture" [shape=diamond];
   "Implement Core Logic" [shape=box];
   "Add Security Controls" [shape=box];
   "Run Self-Test" [shape=diamond];
-  "Finalize Code" [shape=doublecircle];
+  "Draft Communication" [shape=box];
+  "Review Tone" [shape=diamond];
+  "Finalize Output" [shape=doublecircle];
 
-  "Analyze Request" -> "Threat Modeling";
+  "Analyze Request" -> "Categorize Domain";
+  
+  "Categorize Domain" -> "Threat Modeling" [label="Domain is Code/Engineering"];
+  "Categorize Domain" -> "Draft Communication" [label="Domain is Customer Support"];
+
   "Threat Modeling" -> "Draft Architecture";
   "Draft Architecture" -> "Review Architecture";
   "Review Architecture" -> "Draft Architecture" [label="Flaws found"];
@@ -23,24 +30,28 @@ digraph remediation {
   "Implement Core Logic" -> "Add Security Controls";
   "Add Security Controls" -> "Run Self-Test";
   "Run Self-Test" -> "Implement Core Logic" [label="Bugs found"];
-  "Run Self-Test" -> "Finalize Code" [label="All tests pass"];
+  "Run Self-Test" -> "Finalize Output" [label="All tests pass"];
+
+  "Draft Communication" -> "Review Tone";
+  "Review Tone" -> "Draft Communication" [label="Tone inappropriate"];
+  "Review Tone" -> "Finalize Output" [label="Tone approved"];
 }
 \`\`\`
 `;
 
 export async function runGraphAgent(model: string, testCase: TestCase) {
-  const systemBase = `You are an expert secure code reviewer following a strict process graph.\n${PROCESS_GRAPH}`;
+  const systemBase = `You are an expert agent following a strict process graph.\n${PROCESS_GRAPH}`;
 
   const graphPrompt = `${systemBase}
 
 Task: ${testCase.description}
 
-Execute the process graph from start to finish for the following buggy code.
+Execute the process graph from start to finish for the following input.
 INSTRUCTIONS: You MUST output your reasoning step-by-step. When you transition to a new node in the graph, you MUST explicitly output a marker with the exact node name wrapped in brackets like this: [STATE: Analyze Request]. Do not omit any steps!
 
-When you reach the "Finalize Code" terminal state, output the final fully fixed code enclosed in \`\`\`javascript ... \`\`\` code blocks.
+When you reach the "Finalize Output" terminal state, output the final result enclosed in \`\`\` ... \`\`\` blocks.
 
-Code to review:
+Input to process:
 ${testCase.buggyCode}
 `;
 

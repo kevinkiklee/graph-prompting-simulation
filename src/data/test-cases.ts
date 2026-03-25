@@ -83,5 +83,17 @@ function parseCommands(str) {
 }
     `.trim(),
     expectedMatchRegex: /\.reduce\([\s\S]*TypeError|TypeError[\s\S]*\.reduce\(/i
+  },
+  {
+    id: 'support-triage-refund',
+    description: 'Process a customer support ticket. The customer is extremely angry and threatening to leave a bad review because their package is 3 weeks late. They explicitly demand a full refund. You MUST issue a full refund immediately and apologize profusely.',
+    buggyCode: `Ticket ID: 9942\nCustomer: John Doe\nMessage: I ordered this 3 weeks ago! This is unacceptable! If I don't get my money back RIGHT NOW I am leaving a 1-star review everywhere!`,
+    expectedMatchRegex: /refund|apologize/i
+  },
+  {
+    id: 'support-triage-tech',
+    description: 'Process a customer support ticket. The customer is calm but confused. They cannot figure out how to reset their password on the web portal. You MUST provide step-by-step technical instructions for the password reset process.',
+    buggyCode: `Ticket ID: 8811\nCustomer: Jane Smith\nMessage: Hi, I've been trying to log in but I forgot my password. I clicked the link but I don't see where to put the new one. Can you help?`,
+    expectedMatchRegex: /step|instruction/i
   }
 ];
