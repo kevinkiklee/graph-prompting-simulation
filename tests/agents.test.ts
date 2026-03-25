@@ -1,15 +1,20 @@
 import { describe, it, expect, vi } from 'vitest';
 import { runNaiveAgent, runStructuredAgent } from '../src/agents/baseline';
+import { runGraphAgent } from '../src/agents/graph';
+
+let mockResponses = ['fixed code'];
 
 vi.mock('../src/services/gemini', () => ({
-  callModel: vi.fn().mockResolvedValue({
-    text: 'fixed code',
-    tokens: 10,
-    latencyMs: 100
+  callModel: vi.fn().mockImplementation(async () => {
+    return {
+      text: mockResponses.length > 0 ? mockResponses.shift() : 'YES',
+      tokens: 10,
+      latencyMs: 100
+    };
   })
 }));
 
-describe('Baseline Agents', () => {
+describe('Agents', () => {
   const mockTestCase = {
     id: 'test',
     description: 'test bug',
@@ -18,6 +23,7 @@ describe('Baseline Agents', () => {
   };
 
   it('runNaiveAgent should return correct format', async () => {
+    mockResponses = ['fixed code'];
     const result = await runNaiveAgent('model', mockTestCase);
     expect(result.output).toBe('fixed code');
     expect(result.totalLatencyMs).toBe(100);
@@ -26,10 +32,20 @@ describe('Baseline Agents', () => {
   });
 
   it('runStructuredAgent should return correct format', async () => {
+    mockResponses = ['fixed code'];
     const result = await runStructuredAgent('model', mockTestCase);
     expect(result.output).toBe('fixed code');
     expect(result.totalLatencyMs).toBe(100);
     expect(result.totalTokens).toBe(10);
     expect(result.turnCount).toBe(1);
+  });
+
+  it('runGraphAgent should return correct format and aggregate values', async () => {
+    mockResponses = ['analysis', 'plan', 'final fixed code', 'YES'];
+    const result = await runGraphAgent('model', mockTestCase);
+    expect(result.output).toBe('final fixed code');
+    expect(result.totalLatencyMs).toBe(400); // 4 turns
+    expect(result.totalTokens).toBe(40); // 4 turns
+    expect(result.turnCount).toBe(4);
   });
 });
