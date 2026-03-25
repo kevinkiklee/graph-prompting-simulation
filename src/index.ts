@@ -1,18 +1,35 @@
 import { runSimulationMatrix } from './engine/runner';
+import { ModelVersion } from './types';
 
 async function main() {
   const args = process.argv.slice(2);
   let runs = 5;
+  let targetModel: ModelVersion | undefined = undefined;
 
   const runIndex = args.indexOf('--runs');
   if (runIndex !== -1 && args[runIndex + 1]) {
     runs = parseInt(args[runIndex + 1], 10);
   }
 
+  const modelIndex = args.indexOf('--model');
+  if (modelIndex !== -1 && args[modelIndex + 1]) {
+    const modelInput = args[modelIndex + 1];
+    if (Object.values(ModelVersion).includes(modelInput as ModelVersion)) {
+      targetModel = modelInput as ModelVersion;
+    } else {
+      console.error(`Invalid model: ${modelInput}`);
+      console.error(`Available models: ${Object.values(ModelVersion).join(', ')}`);
+      process.exit(1);
+    }
+  }
+
   console.log(`Starting Simulation Engine...`);
+  if (targetModel) {
+    console.log(`Targeting model: ${targetModel}`);
+  }
   console.log(`Targeting ${runs} runs per Model/Strategy/TestCase combination.`);
   
-  await runSimulationMatrix(runs);
+  await runSimulationMatrix(runs, targetModel);
   
   console.log('Simulation complete! Results saved to results.jsonl');
 }

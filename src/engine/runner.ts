@@ -6,8 +6,8 @@ import { evaluateRemediation } from './evaluator';
 import { appendLog, readLogs } from '../utils/logger';
 import { randomUUID } from 'crypto';
 
-export async function runSimulationMatrix(runsPerCombo = 5) {
-  const models = Object.values(ModelVersion);
+export async function runSimulationMatrix(runsPerCombo = 5, targetModel?: ModelVersion) {
+  const models = targetModel ? [targetModel] : Object.values(ModelVersion);
   const strategies = Object.values(AgentStrategy);
   const existingLogs = readLogs();
   
