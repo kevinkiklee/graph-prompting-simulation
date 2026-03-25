@@ -9,6 +9,7 @@ export interface SimulationRun {
   testCaseId: string;
   success: boolean;
   processAdherence?: boolean;
+  processAdherenceScore?: number;
   latencyMs: number;
   totalTokens: number;
   turnCount: number;
@@ -156,10 +157,10 @@ export function Dashboard() {
                 <th className="px-6 py-3">Model</th>
                 <th className="px-6 py-3">Strategy</th>
                 <th className="px-6 py-3">Test Case</th>
-                <th className="px-6 py-3">Success</th>
+                <th className="px-6 py-3">Correct</th>
+                <th className="px-6 py-3">Adherence</th>
                 <th className="px-6 py-3">Latency (ms)</th>
-                <th className="px-6 py-3">Tokens</th>
-                <th className="px-6 py-3">Turns</th>
+                <th className="px-6 py-3">Log</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
@@ -169,17 +170,29 @@ export function Dashboard() {
                     className="hover:bg-gray-50 cursor-pointer"
                     onClick={() => setExpandedRow(expandedRow === (run.runId || String(i)) ? null : (run.runId || String(i)))}
                   >
-                    <td className="px-6 py-4">{run.model}</td>
+                    <td className="px-6 py-4">{run.model.replace('-preview', '')}</td>
                     <td className="px-6 py-4">{run.strategy}</td>
                     <td className="px-6 py-4">{run.testCaseId}</td>
                     <td className="px-6 py-4">
-                      <span className={`px-2 py-1 rounded text-xs font-semibold ${run.success ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
-                        {run.success ? 'PASS' : 'FAIL'}
+                      <span className={`px-2 py-1 rounded text-xs font-bold ${run.success ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                        {run.success ? 'CORRECT' : 'WRONG'}
                       </span>
                     </td>
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-2">
+                        <span className={`font-mono text-xs ${run.processAdherence ? 'text-green-600' : 'text-orange-600'}`}>
+                          {Math.round((run.processAdherenceScore || 0) * 100)}%
+                        </span>
+                        <div className="w-16 bg-gray-200 rounded-full h-1.5">
+                          <div 
+                            className={`h-1.5 rounded-full ${run.processAdherence ? 'bg-green-500' : 'bg-orange-500'}`} 
+                            style={{ width: `${Math.round((run.processAdherenceScore || 0) * 100)}%` }}
+                          ></div>
+                        </div>
+                      </div>
+                    </td>
                     <td className="px-6 py-4">{run.latencyMs}</td>
-                    <td className="px-6 py-4">{run.totalTokens}</td>
-                    <td className="px-6 py-4 text-blue-600 underline">View Log</td>
+                    <td className="px-6 py-4 text-blue-600 underline">View</td>
                   </tr>
                   {expandedRow === (run.runId || String(i)) && (
                     <tr>

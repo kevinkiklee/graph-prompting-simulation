@@ -26,6 +26,7 @@ export interface SimulationRun {
   testCaseId: string;
   success: boolean;
   processAdherence: boolean;
+  processAdherenceScore?: number;
   latencyMs: number;
   totalTokens: number;
   turnCount: number;

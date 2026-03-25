@@ -56,8 +56,8 @@ const structuredTransitions: Record<string, string[]> = {
   '11. Format Output': []
 };
 
-export function evaluateProcessAdherence(strategy: AgentStrategy, traceText: string): { followed: boolean, trace: string[] } {
-  if (strategy === AgentStrategy.Naive) return { followed: false, trace: [] };
+export function evaluateProcessAdherence(strategy: AgentStrategy, traceText: string): { followed: boolean, trace: string[], score: number } {
+  if (strategy === AgentStrategy.Naive) return { followed: false, trace: [], score: 0 };
 
   const stateRegex = /(?:\[|\()?STATE:\s*([^\]\)\n\r]+)(?:\]|\))?/gi;
   let match;
@@ -68,7 +68,7 @@ export function evaluateProcessAdherence(strategy: AgentStrategy, traceText: str
     if (stateName) trace.push(stateName);
   }
 
-  if (trace.length === 0) return { followed: false, trace: [] };
+  if (trace.length === 0) return { followed: false, trace: [], score: 0 };
 
   const transitions = strategy === AgentStrategy.Graph ? graphTransitions : structuredTransitions;
   const initialState = strategy === AgentStrategy.Graph ? 'Analyze Input' : '1. Analyze Input';
@@ -79,8 +79,9 @@ export function evaluateProcessAdherence(strategy: AgentStrategy, traceText: str
     return norm(actual) === norm(expected);
   };
 
-  if (!isMatch(trace[0], initialState)) return { followed: false, trace };
+  if (!isMatch(trace[0], initialState)) return { followed: false, trace, score: 0 };
 
+  let validSteps = 1;
   let followed = true;
   for (let i = 0; i < trace.length - 1; i++) {
     const current = trace[i];
@@ -99,9 +100,17 @@ export function evaluateProcessAdherence(strategy: AgentStrategy, traceText: str
       followed = false;
       break;
     }
+    validSteps++;
   }
 
-  if (!isMatch(trace[trace.length - 1], terminalState)) followed = false;
+  if (!isMatch(trace[trace.length - 1], terminalState)) {
+    followed = false;
+  }
 
-  return { followed, trace };
+  // Calculate score: (valid steps followed) / (typical path length)
+  // For simplicity, we'll use 11 as the benchmark for a successful run
+  const benchmarkLength = 11;
+  let score = followed ? 1 : Math.min(0.95, validSteps / benchmarkLength);
+  
+  return { followed, trace, score };
 }
