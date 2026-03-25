@@ -51,10 +51,10 @@ export function Dashboard() {
       if (strategyRuns.length === 0) return;
 
       const successes = strategyRuns.filter(d => d.success).length;
-      entry[\`\${strategy}_successRate\`] = Math.round((successes / strategyRuns.length) * 100);
+      entry[`${strategy}_successRate`] = Math.round((successes / strategyRuns.length) * 100);
       
       const avgLatency = strategyRuns.reduce((sum, run) => sum + run.latencyMs, 0) / strategyRuns.length;
-      entry[\`\${strategy}_avgLatencyMs\`] = Math.round(avgLatency);
+      entry[`${strategy}_avgLatencyMs`] = Math.round(avgLatency);
     });
 
     return entry;
@@ -76,9 +76,9 @@ export function Dashboard() {
                 <Legend />
                 {strategies.map(strategy => (
                   <Bar 
-                    key={\`\${strategy}_success\`}
-                    dataKey={\`\${strategy}_successRate\`} 
-                    name={\`\${strategy} Success %\`} 
+                    key={`${strategy}_success`}
+                    dataKey={`${strategy}_successRate`} 
+                    name={`${strategy} Success %`} 
                     fill={strategyColors[strategy] || '#000'} 
                   />
                 ))}
@@ -98,9 +98,9 @@ export function Dashboard() {
                 <Legend />
                 {strategies.map(strategy => (
                   <Bar 
-                    key={\`\${strategy}_latency\`}
-                    dataKey={\`\${strategy}_avgLatencyMs\`} 
-                    name={\`\${strategy} Latency (ms)\`} 
+                    key={`${strategy}_latency`}
+                    dataKey={`${strategy}_avgLatencyMs`} 
+                    name={`${strategy} Latency (ms)`} 
                     fill={strategyColors[strategy] || '#000'} 
                   />
                 ))}
