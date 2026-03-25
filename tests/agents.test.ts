@@ -41,11 +41,11 @@ describe('Agents', () => {
   });
 
   it('runGraphAgent should return correct format and aggregate values', async () => {
-    mockResponses = ['analysis', 'plan', 'final fixed code', 'YES'];
+    mockResponses = ['State: Analyze code\n```javascript\nfinal fixed code\n```'];
     const result = await runGraphAgent('model', mockTestCase);
     expect(result.output).toBe('final fixed code');
-    expect(result.totalLatencyMs).toBe(400); // 4 turns
-    expect(result.totalTokens).toBe(40); // 4 turns
-    expect(result.turnCount).toBe(4);
+    expect(result.totalLatencyMs).toBe(100); 
+    expect(result.totalTokens).toBe(10); 
+    expect(result.turnCount).toBe(1);
   });
 });

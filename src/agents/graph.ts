@@ -21,58 +21,34 @@ digraph remediation {
 \`\`\`
 `;
 
-export async function runGraphAgent(model: string, testCase: TestCase, maxRetries = 2) {
-  let totalLatencyMs = 0;
-  let totalTokens = 0;
-  let turnCount = 0;
-  let currentOutput = "";
-
+export async function runGraphAgent(model: string, testCase: TestCase) {
   const systemBase = `You are an expert secure code reviewer following a strict process graph.\n${PROCESS_GRAPH}`;
 
-  // ANALYZE
-  const analyzePrompt = `${systemBase}\n\nCURRENT STATE: "Analyze code"\n\nTask: Analyze the security and logic issues in this code:\n\n${testCase.buggyCode}\n\nList the vulnerabilities found.`;
-  const analysis = await callModel(model, analyzePrompt);
-  totalLatencyMs += analysis.latencyMs;
-  totalTokens += analysis.tokens;
-  turnCount++;
+  const graphPrompt = `${systemBase}
 
-  let retries = 0;
-  let planOutput = "";
+Task: Execute the process graph from start to finish for the following buggy code.
+Output your thought process as you move through each node in the graph (e.g., "State: Analyze code...").
 
-  while (retries <= maxRetries) {
-    // PLAN
-    const planPrompt = `${systemBase}\n\nCURRENT STATE: "Plan remediation"\n\nAnalysis context:\n${analysis.text}\n\nTask: Plan a fix for the code:\n${testCase.buggyCode}\n\nOutline the specific steps to remediate the vulnerabilities.`;
-    const plan = await callModel(model, planPrompt);
-    totalLatencyMs += plan.latencyMs;
-    totalTokens += plan.tokens;
-    turnCount++;
-    planOutput = plan.text;
+When you reach the "Success" terminal state, output the final fully fixed code enclosed in \`\`\`javascript ... \`\`\` code blocks.
 
-    // FIX
-    const fixPrompt = `${systemBase}\n\nCURRENT STATE: "Apply fix"\n\nRemediation Plan:\n${planOutput}\n\nTask: Output ONLY the fully fixed code. Do not include markdown blocks, just the raw code.`;
-    const fix = await callModel(model, fixPrompt);
-    totalLatencyMs += fix.latencyMs;
-    totalTokens += fix.tokens;
-    turnCount++;
-    currentOutput = fix.text;
+Code to review:
+${testCase.buggyCode}
+`;
 
-    // VERIFY
-    const verifyPrompt = `${systemBase}\n\nCURRENT STATE: "Verify fix"\n\nOriginal code:\n${testCase.buggyCode}\n\nFixed code:\n${currentOutput}\n\nTask: Does the fixed code resolve all original issues without introducing new ones? Reply with only YES or NO.`;
-    const verify = await callModel(model, verifyPrompt);
-    totalLatencyMs += verify.latencyMs;
-    totalTokens += verify.tokens;
-    turnCount++;
-
-    if (verify.text.toUpperCase().includes('YES')) {
-      break;
-    }
-    retries++;
+  const result = await callModel(model, graphPrompt);
+  
+  // Extract just the code from the final output block to be parsed by the evaluator
+  let extractedCode = result.text;
+  const match = extractedCode.match(/```(?:javascript|js|typescript|ts)?\n([\s\S]*?)```/);
+  if (match && match[1]) {
+    extractedCode = match[1].trim();
   }
 
   return {
-    output: currentOutput,
-    totalLatencyMs,
-    totalTokens,
-    turnCount
+    output: extractedCode,
+    totalLatencyMs: result.latencyMs,
+    totalTokens: result.tokens,
+    turnCount: 1,
+    rawAgentTrace: result.text // We keep the full trace for the logs if needed, but return the extracted code as output
   };
 }
