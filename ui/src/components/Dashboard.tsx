@@ -111,7 +111,8 @@ export function Dashboard() {
       
       <div className="flex flex-col gap-8 mb-8">
         <div className="bg-white p-6 rounded-lg shadow border border-gray-200">
-          <h2 className="text-xl font-semibold mb-4 text-gray-800">Success Rate (%)</h2>
+          <h2 className="text-xl font-semibold mb-2 text-gray-800">Success Rate (%)</h2>
+          <p className="text-sm text-gray-600 mb-4">Percentage of runs that produced a functionally correct output according to the evaluator.</p>
           <div className="h-96">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={modelChartData}>
@@ -128,7 +129,8 @@ export function Dashboard() {
         </div>
 
         <div className="bg-white p-6 rounded-lg shadow border border-gray-200">
-          <h2 className="text-xl font-semibold mb-4 text-gray-800">Process Adherence (%)</h2>
+          <h2 className="text-xl font-semibold mb-2 text-gray-800">Process Adherence (%)</h2>
+          <p className="text-sm text-gray-600 mb-4">How closely the model followed the requested process steps or graph execution paths.</p>
           <div className="h-96">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={modelChartData}>
@@ -144,7 +146,8 @@ export function Dashboard() {
         </div>
 
         <div className="bg-white p-6 rounded-lg shadow border border-gray-200">
-          <h2 className="text-xl font-semibold mb-4 text-gray-800">Tokens Per Second (TPS)</h2>
+          <h2 className="text-xl font-semibold mb-2 text-gray-800">Tokens Per Second (TPS)</h2>
+          <p className="text-sm text-gray-600 mb-4">Generation speed of the model, measured in output tokens per second.</p>
           <div className="h-96">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={modelChartData}>
@@ -161,7 +164,8 @@ export function Dashboard() {
         </div>
 
         <div className="bg-white p-6 rounded-lg shadow border border-gray-200">
-          <h2 className="text-xl font-semibold mb-4 text-gray-800">Avg Latency (ms)</h2>
+          <h2 className="text-xl font-semibold mb-2 text-gray-800">Avg Latency (ms)</h2>
+          <p className="text-sm text-gray-600 mb-4">Average end-to-end response time for the API calls across all runs.</p>
           <div className="h-96">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={modelChartData}>
