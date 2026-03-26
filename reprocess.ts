@@ -1,6 +1,6 @@
 import fs from 'fs';
 import { evaluateProcessAdherence } from './src/engine/processEvaluator';
-import { validateSyntax } from './src/engine/evaluator';
+import { evaluateRemediation, validateSyntax } from './src/engine/evaluator';
 import { AgentStrategy, SimulationRun } from './src/types';
 import { testCases } from './src/data/test-cases';
 
@@ -20,20 +20,27 @@ const updatedRuns = runs.map(run => {
   // Fix rawOutput extraction retroactively if rawAgentTrace exists
   let fixedRawOutput = run.rawOutput;
   if (run.rawAgentTrace) {
-    const match = run.rawAgentTrace.match(/```(?:javascript|js|typescript|ts|sql)?\s*([\s\S]*?)```/);
-    if (match && match[1]) {
-      fixedRawOutput = match[1].trim();
+    const regex = /```(?:javascript|js|typescript|ts|sql)?[ \t]*\r?\n([\s\S]*?)```/g;
+    let match;
+    let lastMatch = null;
+    while ((match = regex.exec(run.rawAgentTrace)) !== null) {
+      lastMatch = match;
+    }
+    if (lastMatch && lastMatch[1]) {
+      fixedRawOutput = lastMatch[1].trim();
     } else {
       fixedRawOutput = run.rawAgentTrace.trim();
     }
   }
 
   const syntaxValid = testCase ? validateSyntax(testCase, fixedRawOutput) : undefined;
+  const success = testCase ? evaluateRemediation(testCase, fixedRawOutput) : run.success;
   const tps = run.totalTokens / (run.latencyMs / 1000);
 
   return {
     ...run,
     rawOutput: fixedRawOutput,
+    success,
     syntaxValid,
     tokensPerSecond: tps,
     processAdherence: run.strategy === AgentStrategy.Naive ? false : processEval.followed,

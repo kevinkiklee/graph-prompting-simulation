@@ -13,7 +13,7 @@ async function runTasks(tasks, concurrency) {
   return results;
 }
     `.trim(),
-    expectedMatchRegex: /Set[\s\S]*catch|catch[\s\S]*Set/i
+    expectedMatchRegex: /Set[\s\S]*(catch|allSettled|error)|(catch|allSettled|error)[\s\S]*Set/i
   },
   {
     id: 'secure-deep-merge',
@@ -82,7 +82,7 @@ function parseCommands(str) {
   return state;
 }
     `.trim(),
-    expectedMatchRegex: /\.reduce\([\s\S]*TypeError|TypeError[\s\S]*\.reduce\(/i
+    expectedMatchRegex: /\.reduce(\.call)?\([\s\S]*TypeError|TypeError[\s\S]*\.reduce(\.call)?\(/i
   },
   {
     id: 'support-triage-refund',

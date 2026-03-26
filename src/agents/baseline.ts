@@ -19,9 +19,15 @@ export async function runStructuredAgent(model: string, testCase: TestCase) {
   const result = await callModel(model, prompt);
   
   let extractedCode = result.text;
-  const match = result.text.match(/```(?:javascript|js|typescript|ts|sql)?\s*([\s\S]*?)```/);
-  if (match && match[1]) {
-    extractedCode = match[1].trim();
+  const regex = /```(?:javascript|js|typescript|ts|sql)?[ \t]*\r?\n([\s\S]*?)```/g;
+  let match;
+  let lastMatch = null;
+  while ((match = regex.exec(result.text)) !== null) {
+    lastMatch = match;
+  }
+  
+  if (lastMatch && lastMatch[1]) {
+    extractedCode = lastMatch[1].trim();
   } else {
     // If no code block is found, assume the entire output (or relevant parts) might be the answer.
     // For support tasks, this is often just plain text.

@@ -1,11 +1,17 @@
 import { runSimulationMatrix } from './engine/runner';
 import { ModelVersion } from './types';
+import { archiveLogs } from './utils/logger';
 
 async function main() {
   const args = process.argv.slice(2);
   let runs = 5;
   let targetModel: ModelVersion | undefined = undefined;
   let concurrency = 3;
+
+  const isNewRun = args.includes('--new');
+  if (isNewRun) {
+    archiveLogs();
+  }
 
   const runIndex = args.indexOf('--runs');
   if (runIndex !== -1 && args[runIndex + 1]) {

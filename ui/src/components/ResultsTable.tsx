@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { SimulationRun } from './Dashboard';
+import type { SimulationRun } from './Dashboard';
 
 interface ResultsTableProps {
   data: SimulationRun[];
@@ -46,8 +46,8 @@ export function ResultsTable({ data }: ResultsTableProps) {
         if (valA === undefined) valA = sortDir === 'asc' ? Infinity : -Infinity as any;
         if (valB === undefined) valB = sortDir === 'asc' ? Infinity : -Infinity as any;
 
-        if (valA < valB) return sortDir === 'asc' ? -1 : 1;
-        if (valA > valB) return sortDir === 'asc' ? 1 : -1;
+        if (valA! < valB!) return sortDir === 'asc' ? -1 : 1;
+        if (valA! > valB!) return sortDir === 'asc' ? 1 : -1;
         return 0;
       });
     }

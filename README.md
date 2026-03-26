@@ -224,8 +224,14 @@ The CLI runner iterates through combinations of **Models**, **Strategies**, and 
 
 *Note: The runner is fault-tolerant. If you hit an API quota limit or cancel the process, simply run it again—it will scan `results.jsonl` and automatically resume where it left off.*
 
+### Start a Fresh Run
+To start a completely new simulation, use the `--new` flag. This will automatically archive the existing `results.jsonl` file to the `results/` directory with a timestamp, ensuring you don't lose old data while starting fresh:
+```bash
+npm start -- --new
+```
+
 ### Basic Run
-Execute the full matrix (all models, all strategies, all test cases) with 5 iterations per combination:
+Execute the full matrix (all models, all strategies, all test cases) with 5 iterations per combination (resumes if `results.jsonl` exists):
 ```bash
 npm start
 ```

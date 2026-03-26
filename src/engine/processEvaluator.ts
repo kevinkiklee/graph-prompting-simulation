@@ -59,7 +59,7 @@ const structuredTransitions: Record<string, string[]> = {
 export function evaluateProcessAdherence(strategy: AgentStrategy, traceText: string): { followed: boolean, trace: string[], score: number, pathId?: string, errors?: string[] } {
   if (strategy === AgentStrategy.Naive) return { followed: false, trace: [], score: 0 };
 
-  const stateRegex = /(?:\[|\()?STATE:\s*([^\]\)\n\r]+)(?:\]|\))?/gi;
+  const stateRegex = /\[STATE:\s*([^\]\n\r]+)\]/gi;
   let match;
   const trace: string[] = [];
   const errors: string[] = [];
