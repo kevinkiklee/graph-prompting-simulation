@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import type { SimulationRun } from './Dashboard';
+import { testCases } from '../data/test-cases';
 
 interface ResultsTableProps {
   data: SimulationRun[];
@@ -236,6 +237,36 @@ export function ResultsTable({ data }: ResultsTableProps) {
                 {expandedRow === (run.runId || String(i)) && (
                   <tr>
                     <td colSpan={7} className="px-6 py-4 bg-gray-50 border-t border-gray-200">
+                      {!run.success && (
+                        <div className="mb-4 bg-red-50 p-4 rounded border border-red-200">
+                          <h4 className="font-semibold text-red-800 mb-2">Failure Analysis</h4>
+                          {run.syntaxValid === false ? (
+                            <p className="text-red-700 text-sm">The generated code contains syntax errors and cannot be parsed.</p>
+                          ) : (
+                            <div>
+                              <p className="text-red-700 text-sm mb-2">The output failed the functional requirements validation.</p>
+                              {(() => {
+                                const testCase = testCases.find(tc => tc.id === run.testCaseId);
+                                if (!testCase) return null;
+                                return (
+                                  <>
+                                    <div className="bg-white p-3 rounded border border-red-100 mb-2 shadow-sm">
+                                      <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Expected Behavior</span>
+                                      <p className="text-sm text-gray-800 mt-1">{testCase.description}</p>
+                                    </div>
+                                    <div className="bg-white p-3 rounded border border-red-100 shadow-sm">
+                                      <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Missing Required Pattern</span>
+                                      <p className="text-sm font-mono text-red-600 mt-1 break-all bg-red-50 p-1 rounded">
+                                        {testCase.expectedMatchRegex.toString()}
+                                      </p>
+                                    </div>
+                                  </>
+                                );
+                              })()}
+                            </div>
+                          )}
+                        </div>
+                      )}
                       <div className="mb-4">
                         <h4 className="font-semibold text-gray-700 mb-1">Process Errors</h4>
                         <div className="flex flex-wrap gap-2">
