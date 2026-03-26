@@ -115,14 +115,14 @@ export function Dashboard() {
           <p className="text-sm text-gray-600 mb-4">Percentage of runs that produced a functionally correct output according to the evaluator.</p>
           <div className="h-96">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={modelChartData}>
+              <BarChart data={modelChartData} margin={{ top: 20 }}>
                 <XAxis dataKey="model" tick={{ fontSize: 12 }} interval={0} />
                 <YAxis domain={[0, 100]} />
                 <Tooltip />
                 <Legend />
-                <Bar key="naive_success" dataKey="naive_successRate" name="naive" fill={strategyColors['naive']} />
-                <Bar key="structured_success" dataKey="structured_successRate" name="structured" fill={strategyColors['structured']} />
-                <Bar key="graph_success" dataKey="graph_successRate" name="graph" fill={strategyColors['graph']} />
+                <Bar label={{ position: 'top', fontSize: 12, fill: '#6b7280' }} key="naive_success" dataKey="naive_successRate" name="naive" fill={strategyColors['naive']} />
+                <Bar label={{ position: 'top', fontSize: 12, fill: '#6b7280' }} key="structured_success" dataKey="structured_successRate" name="structured" fill={strategyColors['structured']} />
+                <Bar label={{ position: 'top', fontSize: 12, fill: '#6b7280' }} key="graph_success" dataKey="graph_successRate" name="graph" fill={strategyColors['graph']} />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -133,13 +133,13 @@ export function Dashboard() {
           <p className="text-sm text-gray-600 mb-4">How closely the model followed the requested process steps or graph execution paths.</p>
           <div className="h-96">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={modelChartData}>
+              <BarChart data={modelChartData} margin={{ top: 20 }}>
                 <XAxis dataKey="model" tick={{ fontSize: 12 }} interval={0} />
                 <YAxis domain={[0, 100]} />
                 <Tooltip />
                 <Legend />
-                <Bar key="structured_adherence" dataKey="structured_processAdherenceScore" name="structured" fill={strategyColors['structured']} />
-                <Bar key="graph_adherence" dataKey="graph_processAdherenceScore" name="graph" fill={strategyColors['graph']} />
+                <Bar label={{ position: 'top', fontSize: 12, fill: '#6b7280' }} key="structured_adherence" dataKey="structured_processAdherenceScore" name="structured" fill={strategyColors['structured']} />
+                <Bar label={{ position: 'top', fontSize: 12, fill: '#6b7280' }} key="graph_adherence" dataKey="graph_processAdherenceScore" name="graph" fill={strategyColors['graph']} />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -150,14 +150,14 @@ export function Dashboard() {
           <p className="text-sm text-gray-600 mb-4">Generation speed of the model, measured in output tokens per second.</p>
           <div className="h-96">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={modelChartData}>
+              <BarChart data={modelChartData} margin={{ top: 20 }}>
                 <XAxis dataKey="model" tick={{ fontSize: 12 }} interval={0} />
                 <YAxis />
                 <Tooltip />
                 <Legend />
-                <Bar key="naive_tps" dataKey="naive_avgTPS" name="naive" fill={strategyColors['naive']} />
-                <Bar key="structured_tps" dataKey="structured_avgTPS" name="structured" fill={strategyColors['structured']} />
-                <Bar key="graph_tps" dataKey="graph_avgTPS" name="graph" fill={strategyColors['graph']} />
+                <Bar label={{ position: 'top', fontSize: 12, fill: '#6b7280' }} key="naive_tps" dataKey="naive_avgTPS" name="naive" fill={strategyColors['naive']} />
+                <Bar label={{ position: 'top', fontSize: 12, fill: '#6b7280' }} key="structured_tps" dataKey="structured_avgTPS" name="structured" fill={strategyColors['structured']} />
+                <Bar label={{ position: 'top', fontSize: 12, fill: '#6b7280' }} key="graph_tps" dataKey="graph_avgTPS" name="graph" fill={strategyColors['graph']} />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -168,14 +168,14 @@ export function Dashboard() {
           <p className="text-sm text-gray-600 mb-4">Average end-to-end response time for the API calls across all runs.</p>
           <div className="h-96">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={modelChartData}>
+              <BarChart data={modelChartData} margin={{ top: 20 }}>
                 <XAxis dataKey="model" tick={{ fontSize: 12 }} interval={0} />
                 <YAxis />
                 <Tooltip />
                 <Legend />
-                <Bar key="naive_latency" dataKey="naive_avgLatencyMs" name="naive" fill={strategyColors['naive']} />
-                <Bar key="structured_latency" dataKey="structured_avgLatencyMs" name="structured" fill={strategyColors['structured']} />
-                <Bar key="graph_latency" dataKey="graph_avgLatencyMs" name="graph" fill={strategyColors['graph']} />
+                <Bar label={{ position: 'top', fontSize: 12, fill: '#6b7280' }} key="naive_latency" dataKey="naive_avgLatencyMs" name="naive" fill={strategyColors['naive']} />
+                <Bar label={{ position: 'top', fontSize: 12, fill: '#6b7280' }} key="structured_latency" dataKey="structured_avgLatencyMs" name="structured" fill={strategyColors['structured']} />
+                <Bar label={{ position: 'top', fontSize: 12, fill: '#6b7280' }} key="graph_latency" dataKey="graph_avgLatencyMs" name="graph" fill={strategyColors['graph']} />
               </BarChart>
             </ResponsiveContainer>
           </div>
