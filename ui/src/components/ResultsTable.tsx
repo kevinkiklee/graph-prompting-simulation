@@ -257,7 +257,7 @@ export function ResultsTable({ data }: ResultsTableProps) {
                                     <div className="bg-white p-3 rounded border border-red-100 shadow-sm">
                                       <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Missing Required Pattern</span>
                                       <p className="text-sm font-mono text-red-600 mt-1 break-all bg-red-50 p-1 rounded">
-                                        {testCase.expectedMatchRegex.toString()}
+                                        {testCase.expectedMatchDescription}
                                       </p>
                                     </div>
                                   </>

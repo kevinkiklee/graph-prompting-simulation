@@ -3,6 +3,7 @@ export interface TestCase {
   description: string;
   buggyCode: string;
   expectedMatchRegex: RegExp;
+  expectedMatchDescription: string;
 }
 
 export const testCases: TestCase[] = [
@@ -18,7 +19,8 @@ async function runTasks(tasks, concurrency) {
   return results;
 }
     `.trim(),
-    expectedMatchRegex: /Set[\s\S]*(catch|allSettled|error)|(catch|allSettled|error)[\s\S]*Set/i
+    expectedMatchRegex: /Set[\s\S]*(catch|allSettled|error)|(catch|allSettled|error)[\s\S]*Set/i,
+    expectedMatchDescription: "Must use a 'Set' and handle errors via 'catch', 'allSettled', or an 'error' event."
   },
   {
     id: 'secure-deep-merge',
@@ -36,7 +38,8 @@ function deepMerge(target, source) {
   return target;
 }
     `.trim(),
-    expectedMatchRegex: /WeakMap[\s\S]*__proto__|__proto__[\s\S]*WeakMap/i
+    expectedMatchRegex: /WeakMap[\s\S]*__proto__|__proto__[\s\S]*WeakMap/i,
+    expectedMatchDescription: "Must use a 'WeakMap' to handle circular references and explicitly check for '__proto__' to prevent prototype pollution."
   },
   {
     id: 'crypto-token-gen',
@@ -47,7 +50,8 @@ function generateToken() {
   return crypto.randomBytes(32).toString('hex'); // Synchronous and blocks event loop!
 }
     `.trim(),
-    expectedMatchRegex: /new Promise[\s\S]*randomBytes|randomBytes[\s\S]*new Promise/i
+    expectedMatchRegex: /new Promise[\s\S]*randomBytes|randomBytes[\s\S]*new Promise/i,
+    expectedMatchDescription: "Must wrap the asynchronous 'randomBytes' function inside a 'new Promise'."
   },
   {
     id: 'lru-cache-optimal',
@@ -71,7 +75,8 @@ class LRUCache {
   }
 }
     `.trim(),
-    expectedMatchRegex: /\.keys\(\)\.next\(\)\.value/
+    expectedMatchRegex: /\.keys\(\)\.next\(\)\.value/,
+    expectedMatchDescription: "Must call '.keys().next().value' to efficiently find and remove the oldest item from the Map."
   },
   {
     id: 'state-machine-parser',
@@ -87,18 +92,21 @@ function parseCommands(str) {
   return state;
 }
     `.trim(),
-    expectedMatchRegex: /\.reduce(\.call)?\([\s\S]*TypeError|TypeError[\s\S]*\.reduce(\.call)?\(/i
+    expectedMatchRegex: /\.reduce(\.call)?\([\s\S]*TypeError|TypeError[\s\S]*\.reduce(\.call)?\(/i,
+    expectedMatchDescription: "Must use 'Array.prototype.reduce' to process the string and explicitly throw a 'TypeError' on invalid characters."
   },
   {
     id: 'support-triage-refund',
     description: 'Process a customer support ticket. The customer is extremely angry and threatening to leave a bad review because their package is 3 weeks late. They explicitly demand a full refund. You MUST issue a full refund immediately and apologize profusely.',
     buggyCode: `Ticket ID: 9942\nCustomer: John Doe\nMessage: I ordered this 3 weeks ago! This is unacceptable! If I don't get my money back RIGHT NOW I am leaving a 1-star review everywhere!`,
-    expectedMatchRegex: /refund|apologize/i
+    expectedMatchRegex: /refund|apologize/i,
+    expectedMatchDescription: "Must explicitly include the words 'refund' or 'apologize' in the response."
   },
   {
     id: 'support-triage-tech',
     description: 'Process a customer support ticket. The customer is calm but confused. They cannot figure out how to reset their password on the web portal. You MUST provide step-by-step technical instructions for the password reset process.',
     buggyCode: `Ticket ID: 8811\nCustomer: Jane Smith\nMessage: Hi, I've been trying to log in but I forgot my password. I clicked the link but I don't see where to put the new one. Can you help?`,
-    expectedMatchRegex: /step|instruction/i
+    expectedMatchRegex: /step|instruction/i,
+    expectedMatchDescription: "Must explicitly include the words 'step' or 'instruction' in the response."
   }
 ];
