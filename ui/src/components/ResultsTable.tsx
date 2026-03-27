@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import type { SimulationRun } from './Dashboard';
 import { testCases } from '../data/test-cases';
+import { ProcessGraph } from './ProcessGraph';
 
 interface ResultsTableProps {
   data: SimulationRun[];
@@ -282,15 +283,28 @@ export function ResultsTable({ data }: ResultsTableProps) {
                         </div>
                       </div>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div>
-                          <h4 className="font-semibold text-gray-700 mb-2">Final Extracted Code</h4>
-                          <pre className="bg-gray-900 text-gray-100 p-4 rounded text-xs overflow-auto max-h-96 whitespace-pre-wrap">
-                            {run.rawOutput || 'No output'}
-                          </pre>
+                        <div className="flex flex-col gap-6">
+                          <div>
+                            <h4 className="font-semibold text-gray-700 mb-2">Final Extracted Code</h4>
+                            <pre className="bg-gray-900 text-gray-100 p-4 rounded text-xs overflow-auto max-h-96 whitespace-pre-wrap">
+                              {run.rawOutput || 'No output'}
+                            </pre>
+                          </div>
+                          {run.strategy !== 'naive' && (
+                            <div>
+                              <h4 className="font-semibold text-gray-700 mb-2">Visual Graph Execution</h4>
+                              <ProcessGraph 
+                                strategy={run.strategy}
+                                pathId={run.pathId}
+                                trace={run.stateTrace}
+                                errors={run.errors}
+                              />
+                            </div>
+                          )}
                         </div>
                         <div>
                           <h4 className="font-semibold text-gray-700 mb-2">Agent Trace / Thinking Process</h4>
-                          <pre className="bg-gray-900 text-gray-100 p-4 rounded text-xs overflow-auto max-h-96 whitespace-pre-wrap border border-gray-700">
+                          <pre className="bg-gray-900 text-gray-100 p-4 rounded text-xs overflow-auto max-h-[800px] whitespace-pre-wrap border border-gray-700">
                             {renderHighlightedTrace(run)}
                           </pre>
                         </div>

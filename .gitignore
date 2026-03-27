@@ -1,5 +1,11 @@
-.worktrees/
-results.jsonl
+node_modules/
+ui/node_modules/
+dist/
+build/
 .env
-node_modules
+.worktrees/
 notes.md
+.DS_Store
+results/
+ui/public/*.jsonl
+ui/public/datasets.json

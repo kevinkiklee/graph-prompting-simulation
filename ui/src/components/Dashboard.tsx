@@ -25,18 +25,48 @@ export interface SimulationRun {
 
 export function Dashboard() {
   const [data, setData] = useState<SimulationRun[]>([]);
+  const [datasets, setDatasets] = useState<string[]>([]);
+  const [selectedDataset, setSelectedDataset] = useState<string>('results.jsonl');
 
   useEffect(() => {
-    fetch('/results.jsonl')
+    const isDev = import.meta.env.DEV;
+    const fetchUrl = isDev ? '/api/datasets' : './datasets.json';
+
+    fetch(fetchUrl)
+      .then(res => {
+        if (!res.ok) throw new Error('API/JSON not available');
+        return res.json();
+      })
+      .then(files => {
+        if (files && files.length > 0) {
+          setDatasets(files);
+          setSelectedDataset(files[0]);
+        }
+      })
+      .catch(err => {
+        console.warn('Failed to fetch datasets. Using default results.jsonl:', err);
+      });
+  }, []);
+
+  useEffect(() => {
+    if (!selectedDataset) return;
+    
+    const isDev = import.meta.env.DEV;
+    const fetchPath = isDev && datasets.length > 0 ? `/api/dataset/${selectedDataset}` : `./${selectedDataset}`;
+    
+    fetch(fetchPath)
       .then(res => res.text())
       .then(text => {
-        if (!text) return;
+        if (!text) {
+          setData([]);
+          return;
+        }
         const lines = text.split('\n').filter(Boolean);
         const runs = lines.map(line => JSON.parse(line));
         setData(runs);
       })
       .catch(err => console.error('Failed to fetch logs:', err));
-  }, []);
+  }, [selectedDataset, datasets]);
 
   if (!data.length) return <div className="p-8 text-center">Loading simulation results...</div>;
 
@@ -83,17 +113,19 @@ export function Dashboard() {
       const strategyRuns = modelRuns.filter(d => d.strategy === strategy);
       if (strategyRuns.length === 0) return;
 
+      const calcRate = (num: number, den: number) => Number(((num / den) * 100).toFixed(2));
+
       const successes = strategyRuns.filter(d => d.success).length;
-      entry[`${strategy}_successRate`] = Math.round((successes / strategyRuns.length) * 100);
+      entry[`${strategy}_successRate`] = calcRate(successes, strategyRuns.length);
 
       const syntaxes = strategyRuns.filter(d => d.syntaxValid !== false).length;
-      entry[`${strategy}_syntaxRate`] = Math.round((syntaxes / strategyRuns.length) * 100);
+      entry[`${strategy}_syntaxRate`] = calcRate(syntaxes, strategyRuns.length);
 
       const adherence = strategyRuns.filter(d => d.processAdherence).length;
-      entry[`${strategy}_processAdherence`] = strategy === 'naive' ? 0 : Math.round((adherence / strategyRuns.length) * 100);
+      entry[`${strategy}_processAdherence`] = strategy === 'naive' ? 0 : calcRate(adherence, strategyRuns.length);
       
       const adherenceScoreSum = strategyRuns.reduce((sum, run) => sum + (run.processAdherenceScore || 0), 0);
-      entry[`${strategy}_processAdherenceScore`] = strategy === 'naive' ? 0 : Math.round((adherenceScoreSum / strategyRuns.length) * 100);
+      entry[`${strategy}_processAdherenceScore`] = strategy === 'naive' ? 0 : calcRate(adherenceScoreSum, strategyRuns.length);
       
       const avgLatency = strategyRuns.reduce((sum, run) => sum + run.latencyMs, 0) / strategyRuns.length;
       entry[`${strategy}_avgLatencyMs`] = Math.round(avgLatency);
@@ -107,7 +139,22 @@ export function Dashboard() {
 
   return (
     <div className="p-8 max-w-7xl mx-auto font-sans">
-      <h1 className="text-3xl font-bold mb-8">Graph Prompting Simulation Dashboard</h1>
+      <div className="flex justify-between items-center mb-8">
+        <h1 className="text-3xl font-bold">Graph Prompting Simulation Dashboard</h1>
+        <div className="flex gap-4 items-center">
+          {datasets.length > 0 && (
+            <select 
+              value={selectedDataset} 
+              onChange={(e) => setSelectedDataset(e.target.value)}
+              className="p-2 border border-gray-300 rounded shadow-sm bg-white text-gray-700 text-sm font-medium"
+            >
+              {datasets.map(d => (
+                <option key={d} value={d}>{d}</option>
+              ))}
+            </select>
+          )}
+        </div>
+      </div>
       
       <div className="flex flex-col gap-8 mb-8">
         <div className="bg-white p-6 rounded-lg shadow border border-gray-200">
@@ -120,9 +167,9 @@ export function Dashboard() {
                 <YAxis domain={[0, 100]} />
                 <Tooltip />
                 <Legend />
-                <Bar label={{ position: 'top', fontSize: 12, fill: '#6b7280' }} key="naive_success" dataKey="naive_successRate" name="naive" fill={strategyColors['naive']} />
-                <Bar label={{ position: 'top', fontSize: 12, fill: '#6b7280' }} key="structured_success" dataKey="structured_successRate" name="structured" fill={strategyColors['structured']} />
-                <Bar label={{ position: 'top', fontSize: 12, fill: '#6b7280' }} key="graph_success" dataKey="graph_successRate" name="graph" fill={strategyColors['graph']} />
+                <Bar radius={[4, 4, 0, 0]} label={{ position: 'top', fontSize: 12, fill: '#6b7280' }} key="naive_success" dataKey="naive_successRate" name="naive" fill={strategyColors['naive']} />
+                <Bar radius={[4, 4, 0, 0]} label={{ position: 'top', fontSize: 12, fill: '#6b7280' }} key="structured_success" dataKey="structured_successRate" name="structured" fill={strategyColors['structured']} />
+                <Bar radius={[4, 4, 0, 0]} label={{ position: 'top', fontSize: 12, fill: '#6b7280' }} key="graph_success" dataKey="graph_successRate" name="graph" fill={strategyColors['graph']} />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -138,8 +185,8 @@ export function Dashboard() {
                 <YAxis domain={[0, 100]} />
                 <Tooltip />
                 <Legend />
-                <Bar label={{ position: 'top', fontSize: 12, fill: '#6b7280' }} key="structured_adherence" dataKey="structured_processAdherenceScore" name="structured" fill={strategyColors['structured']} />
-                <Bar label={{ position: 'top', fontSize: 12, fill: '#6b7280' }} key="graph_adherence" dataKey="graph_processAdherenceScore" name="graph" fill={strategyColors['graph']} />
+                <Bar radius={[4, 4, 0, 0]} label={{ position: 'top', fontSize: 12, fill: '#6b7280' }} key="structured_adherence" dataKey="structured_processAdherenceScore" name="structured" fill={strategyColors['structured']} />
+                <Bar radius={[4, 4, 0, 0]} label={{ position: 'top', fontSize: 12, fill: '#6b7280' }} key="graph_adherence" dataKey="graph_processAdherenceScore" name="graph" fill={strategyColors['graph']} />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -155,9 +202,9 @@ export function Dashboard() {
                 <YAxis />
                 <Tooltip />
                 <Legend />
-                <Bar label={{ position: 'top', fontSize: 12, fill: '#6b7280' }} key="naive_tps" dataKey="naive_avgTPS" name="naive" fill={strategyColors['naive']} />
-                <Bar label={{ position: 'top', fontSize: 12, fill: '#6b7280' }} key="structured_tps" dataKey="structured_avgTPS" name="structured" fill={strategyColors['structured']} />
-                <Bar label={{ position: 'top', fontSize: 12, fill: '#6b7280' }} key="graph_tps" dataKey="graph_avgTPS" name="graph" fill={strategyColors['graph']} />
+                <Bar radius={[4, 4, 0, 0]} label={{ position: 'top', fontSize: 12, fill: '#6b7280' }} key="naive_tps" dataKey="naive_avgTPS" name="naive" fill={strategyColors['naive']} />
+                <Bar radius={[4, 4, 0, 0]} label={{ position: 'top', fontSize: 12, fill: '#6b7280' }} key="structured_tps" dataKey="structured_avgTPS" name="structured" fill={strategyColors['structured']} />
+                <Bar radius={[4, 4, 0, 0]} label={{ position: 'top', fontSize: 12, fill: '#6b7280' }} key="graph_tps" dataKey="graph_avgTPS" name="graph" fill={strategyColors['graph']} />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -173,9 +220,9 @@ export function Dashboard() {
                 <YAxis />
                 <Tooltip />
                 <Legend />
-                <Bar label={{ position: 'top', fontSize: 12, fill: '#6b7280' }} key="naive_latency" dataKey="naive_avgLatencyMs" name="naive" fill={strategyColors['naive']} />
-                <Bar label={{ position: 'top', fontSize: 12, fill: '#6b7280' }} key="structured_latency" dataKey="structured_avgLatencyMs" name="structured" fill={strategyColors['structured']} />
-                <Bar label={{ position: 'top', fontSize: 12, fill: '#6b7280' }} key="graph_latency" dataKey="graph_avgLatencyMs" name="graph" fill={strategyColors['graph']} />
+                <Bar radius={[4, 4, 0, 0]} label={{ position: 'top', fontSize: 12, fill: '#6b7280' }} key="naive_latency" dataKey="naive_avgLatencyMs" name="naive" fill={strategyColors['naive']} />
+                <Bar radius={[4, 4, 0, 0]} label={{ position: 'top', fontSize: 12, fill: '#6b7280' }} key="structured_latency" dataKey="structured_avgLatencyMs" name="structured" fill={strategyColors['structured']} />
+                <Bar radius={[4, 4, 0, 0]} label={{ position: 'top', fontSize: 12, fill: '#6b7280' }} key="graph_latency" dataKey="graph_avgLatencyMs" name="graph" fill={strategyColors['graph']} />
               </BarChart>
             </ResponsiveContainer>
           </div>
